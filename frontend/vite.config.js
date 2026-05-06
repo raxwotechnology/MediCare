@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': 'https://demomedicalclinic.onrender.com'
+      '/api': 'https://medicare-r54p.onrender.com'
     }
   }
 })

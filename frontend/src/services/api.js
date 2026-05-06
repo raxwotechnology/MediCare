@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://demomedicalclinic.onrender.com/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://medicare-r54p.onrender.com/api',
   headers: { 'Content-Type': 'application/json' },
 });
 
