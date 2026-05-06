@@ -1,0 +1,12 @@
+import express from 'express';
+import { getAllUsers, getUserById, createUser, updateUser, toggleUserStatus } from '../controllers/userController.js';
+import { protect, authorize } from '../middleware/auth.js';
+import { logAction } from '../middleware/audit.js';
+const router = express.Router();
+router.use(protect, authorize('admin'));
+router.get('/', getAllUsers);
+router.post('/', logAction('CREATE_USER', 'User'), createUser);
+router.get('/:id', getUserById);
+router.put('/:id', logAction('UPDATE_USER', 'User'), updateUser);
+router.patch('/:id/toggle', logAction('TOGGLE_USER', 'User'), toggleUserStatus);
+export default router;

@@ -1,0 +1,12 @@
+import express from 'express';
+import { getFinancialSummary, downloadPDFReport, downloadExcelReport, downloadCustomReport, downloadCategorizedPDF, getServiceReport } from '../controllers/reportController.js';
+import { protect, authorize } from '../middleware/auth.js';
+const router = express.Router();
+router.use(protect, authorize('admin'));
+router.get('/summary', getFinancialSummary);
+router.get('/service-report', getServiceReport);
+router.get('/pdf', downloadPDFReport);
+router.get('/excel', downloadExcelReport);
+router.get('/custom', downloadCustomReport);
+router.get('/categorized-pdf', downloadCategorizedPDF);
+export default router;

@@ -1,0 +1,13 @@
+import express from 'express';
+import { createEmployee, getEmployees, getEmployeeById, updateEmployee, deleteEmployee, paySalary } from '../controllers/employeeController.js';
+import { protect, authorize } from '../middleware/auth.js';
+import { logAction } from '../middleware/audit.js';
+const router = express.Router();
+router.use(protect, authorize('admin'));
+router.get('/', getEmployees);
+router.post('/', logAction('CREATE_EMPLOYEE', 'Employee'), createEmployee);
+router.get('/:id', getEmployeeById);
+router.put('/:id', logAction('UPDATE_EMPLOYEE', 'Employee'), updateEmployee);
+router.delete('/:id', logAction('DELETE_EMPLOYEE', 'Employee'), deleteEmployee);
+router.post('/:id/pay-salary', logAction('PAY_SALARY', 'Employee'), paySalary);
+export default router;

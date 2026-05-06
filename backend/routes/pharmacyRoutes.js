@@ -1,0 +1,10 @@
+import express from 'express';
+import { getPaidAppointments, addPharmacyBill, payPharmacyBill } from '../controllers/pharmacyController.js';
+import { protect, authorize } from '../middleware/auth.js';
+import { logAction } from '../middleware/audit.js';
+const router = express.Router();
+router.use(protect, authorize('pharmacist', 'admin'));
+router.get('/appointments', getPaidAppointments);
+router.patch('/appointments/:id/bill', logAction('PHARMACY_BILL', 'Appointment'), addPharmacyBill);
+router.patch('/appointments/:id/bill/pay', logAction('PHARMACY_BILL_PAY', 'Appointment'), payPharmacyBill);
+export default router;
