@@ -90,7 +90,7 @@ export default function ReceptionistDoctors() {
   };
 
   const handleSave = async (e) => {
-    e.preventDefault(); setSaving(true);
+    if (e && e.preventDefault) e.preventDefault(); setSaving(true);
     try {
       if (selectedDoctor) {
         await doctorService.update(selectedDoctor._id, form);
@@ -202,7 +202,7 @@ export default function ReceptionistDoctors() {
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900">Dr. {doc.name}</p>
-                      <p className="text-sm text-gray-500">{doc.phone}{doc.specialization && ` • ${doc.specialization}`}</p>
+                      <p className="text-sm text-gray-500">{doc.specialization && `  ${doc.specialization}`}</p>
                       {doc.slmcNumber && <p className="text-xs text-gray-400 font-mono">SLMC: {doc.slmcNumber}</p>}
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <span className={`badge ${doc.isRegistered ? 'badge-green' : 'badge-yellow'}`}>
@@ -337,17 +337,16 @@ export default function ReceptionistDoctors() {
           </div>
         )}
 
-        <form onSubmit={handleSave}>
+        <form onSubmit={handleSave} onKeyDown={e => { if (e.key === 'Enter' && activeTab !== 'Profile') e.preventDefault(); }}>
           {(activeTab === 'Profile' || selectedDoctor) && (
             <div className="space-y-4">
-              {['name', 'phone', 'specialization', 'slmcNumber'].map(field => (
+              {['name', 'specialization', 'slmcNumber'].map(field => (
                 <div key={field}>
                   <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
                     {field === 'slmcNumber' ? 'SLMC Registration Number' : field}
-                    {field !== 'specialization' && field !== 'slmcNumber' && ' *'}
                   </label>
                   <input value={form[field]} onChange={e => setForm({ ...form, [field]: e.target.value })}
-                    className="input-field" required={field !== 'specialization' && field !== 'slmcNumber'} />
+                    className="input-field" />
                 </div>
               ))}
               {!selectedDoctor && (
@@ -467,23 +466,24 @@ export default function ReceptionistDoctors() {
             </div>
           )}
 
-          <div className="flex gap-3 pt-5 mt-2 border-t border-gray-100">
-            <button type="button" onClick={() => setShowModal(false)} className="btn-secondary flex-1">Cancel</button>
-            {!selectedDoctor && activeTab !== 'Profile' && (
-              <button type="button" onClick={() => setActiveTab(TABS[TABS.indexOf(activeTab) - 1])} className="btn-secondary flex-1">← Back</button>
-            )}
-            {!selectedDoctor && activeTab !== 'Schedule' ? (
-              <button type="button" onClick={() => {
-                if (activeTab === 'Profile' && (!form.name || !form.phone)) { toast.error('Name and phone are required'); return; }
-                setActiveTab(TABS[TABS.indexOf(activeTab) + 1]);
-              }} className="btn-primary flex-1">Next →</button>
-            ) : (
-              <button type="submit" disabled={saving} className="btn-primary flex-1">
-                {saving ? 'Saving...' : (selectedDoctor ? 'Save Changes' : 'Create Doctor')}
-              </button>
-            )}
-          </div>
         </form>
+
+        <div className="flex gap-3 pt-5 mt-2 border-t border-gray-100">
+          <button type="button" onClick={() => setShowModal(false)} className="btn-secondary flex-1">Cancel</button>
+          {!selectedDoctor && activeTab !== 'Profile' && (
+            <button type="button" onClick={() => setActiveTab(TABS[TABS.indexOf(activeTab) - 1])} className="btn-secondary flex-1">← Back</button>
+          )}
+          {!selectedDoctor && activeTab !== 'Schedule' ? (
+            <button type="button" onClick={() => {
+              if (activeTab === 'Profile' && !form.name) { toast.error('Name is required'); return; }
+              setActiveTab(TABS[TABS.indexOf(activeTab) + 1]);
+            }} className="btn-primary flex-1">Next →</button>
+          ) : (
+            <button type="button" onClick={handleSave} disabled={saving} className="btn-primary flex-1">
+              {saving ? 'Saving...' : (selectedDoctor ? 'Save Changes' : 'Create Doctor')}
+            </button>
+          )}
+        </div>
       </Modal>
 
       {/* Add/Edit Service Modal */}

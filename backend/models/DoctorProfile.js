@@ -12,7 +12,7 @@ const timeSlotSchema = new mongoose.Schema({
 
 const doctorProfileSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // null until doctor registers
-  phone: { type: String, required: true, unique: true },
+  phone: { type: String, required: false, sparse: true },
   name: { type: String, required: true },
   specialization: { type: String },
   slmcNumber: { type: String },
