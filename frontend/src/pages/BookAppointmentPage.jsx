@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { appointmentService, doctorService } from '../services';
 import DatePickerWithHighlights from '../components/common/DatePickerWithHighlights';
 import toast from 'react-hot-toast';
-import { FiActivity, FiSearch, FiCalendar, FiUser, FiPhone, FiHash, FiCheckCircle, FiFilter, FiUserCheck } from 'react-icons/fi';
+import { FiActivity, FiSearch, FiCalendar, FiUser, FiPhone, FiHash, FiCheckCircle, FiFilter, FiUserCheck, FiAlertCircle } from 'react-icons/fi';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -57,6 +57,7 @@ export default function BookAppointmentPage() {
   const [queueNo, setQueueNo] = useState(null);
   const [form, setForm] = useState({ patientName: '', patientPhone: '', appointmentDate: new Date().toISOString().split('T')[0] });
   const [loading, setLoading] = useState(false);
+  const [doctorsLoading, setDoctorsLoading] = useState(true);
   const [booked, setBooked] = useState(null);
   const [phoneLookup, setPhoneLookup] = useState(false);
   const [search, setSearch] = useState('');
@@ -68,7 +69,11 @@ export default function BookAppointmentPage() {
   const doctorsPerPage = 4;
 
   useEffect(() => {
-    doctorService.getPublic().then(r => setDoctors(r.data)).catch(() => { });
+    setDoctorsLoading(true);
+    doctorService.getPublic()
+      .then(r => setDoctors(r.data))
+      .catch(() => {})
+      .finally(() => setDoctorsLoading(false));
   }, []);
 
   // Fetch already-booked dates for the selected doctor (public endpoint)
@@ -101,6 +106,27 @@ export default function BookAppointmentPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedDoctor || !selectedService) return toast.error('Please select a doctor and service');
+    if (!form.appointmentDate) return toast.error('Please select an appointment date');
+
+    // Validate: doctor has no schedule at all
+    if (!selectedDoctor.availability || selectedDoctor.availability.length === 0) {
+      return toast.error(`Dr. ${selectedDoctor.name} has no schedule set. Please contact the clinic directly.`);
+    }
+
+    // Validate: doctor not available on the selected date
+    const selectedIsToday = form.appointmentDate === new Date().toISOString().split('T')[0];
+    const slotsOnDay = getSlotsForDate(selectedDoctor, form.appointmentDate);
+    const futureSlots = getFutureSlotsToday(selectedDoctor, form.appointmentDate);
+    const hasAvailableSlot = selectedIsToday ? futureSlots.length > 0 : slotsOnDay.length > 0;
+
+    if (!hasAvailableSlot) {
+      const dayName = DAYS[new Date(form.appointmentDate + 'T00:00:00').getDay()];
+      if (selectedIsToday && slotsOnDay.length > 0) {
+        return toast.error(`Dr. ${selectedDoctor.name}'s slots for today have already passed. Please select a future date.`);
+      }
+      return toast.error(`Dr. ${selectedDoctor.name} is not available on ${dayName}s. Please select a different date.`);
+    }
+
     setLoading(true);
     try {
       const r = await appointmentService.createPublic({
@@ -165,6 +191,23 @@ export default function BookAppointmentPage() {
     isToday ? futureSlotsToday.length > 0 : availabilitySlots.length > 0
   );
 
+  // Derive a human-readable block reason for the confirm button
+  const blockReason = (() => {
+    if (!selectedDoctor) return 'Please select a doctor to continue';
+    if (!selectedService) return 'Please select a service to continue';
+    if (!form.appointmentDate) return 'Please select an appointment date';
+    if (hasAvailabilityDefined && availabilitySlots.length === 0) {
+      const dayName = DAYS[new Date(form.appointmentDate + 'T00:00:00').getDay()];
+      return `Dr. ${selectedDoctor.name} is not available on ${dayName}s`;
+    }
+    if (hasAvailabilityDefined && isToday && availabilitySlots.length > 0 && futureSlotsToday.length === 0) {
+      return `Dr. ${selectedDoctor.name}'s slots for today have passed — please pick a future date`;
+    }
+    if (!form.patientName.trim()) return 'Please enter the patient name';
+    if (!form.patientPhone.trim()) return 'Please enter a contact number';
+    return null;
+  })();
+
   if (booked) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary-900 to-clinic-teal flex items-center justify-center p-4">
@@ -200,6 +243,7 @@ export default function BookAppointmentPage() {
           <span className="font-display font-bold text-white text-xl hidden sm:block">MediClinic</span>
         </Link>
         <div className="flex gap-2">
+          <Link to="/check-appointment" className="text-white/80 hover:text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-white/10 transition">Check Appointment</Link>
           <Link to="/login" className="text-white/80 hover:text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-white/10 transition">Login</Link>
           <Link to="/register" className="bg-white text-primary-700 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-primary-50 transition">Register</Link>
         </div>
@@ -265,6 +309,24 @@ export default function BookAppointmentPage() {
 
               <div className="p-4 max-h-[500px] overflow-y-auto custom-scrollbar">
                 <div className="grid sm:grid-cols-2 gap-3">
+                  {doctorsLoading ? (
+                    Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="flex flex-col p-4 rounded-2xl border-2 border-gray-100 animate-pulse">
+                        <div className="flex items-center gap-3 mb-3">
+                          <div className="w-10 h-10 bg-gray-200 rounded-lg flex-shrink-0" />
+                          <div className="flex-1 space-y-2">
+                            <div className="h-3.5 bg-gray-200 rounded w-3/4" />
+                            <div className="h-2.5 bg-gray-100 rounded w-1/2" />
+                          </div>
+                        </div>
+                        <div className="flex gap-1.5">
+                          <div className="h-5 bg-gray-100 rounded w-20" />
+                          <div className="h-5 bg-gray-100 rounded w-16" />
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <>
                   {filteredDoctors.length === 0 && (
                     <div className="col-span-full py-12 text-center">
                       <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -350,9 +412,11 @@ export default function BookAppointmentPage() {
                     );
                   })}
 
+                </>
+                  )}
                 </div>
               </div>
-              {totalPages > 1 && (
+              {!doctorsLoading && totalPages > 1 && (
                 <div className="flex justify-center items-center gap-2 mt-2 mb-5">
 
                   <button
@@ -598,9 +662,9 @@ export default function BookAppointmentPage() {
                 </div>
               )}
 
-              <button type="submit" disabled={loading || !selectedDoctor || !selectedService}
+              <button type="submit" disabled={loading || !!blockReason}
                 className={`w-full py-4 rounded-2xl text-white font-bold text-lg shadow-xl transition-all flex items-center justify-center gap-3
-                  ${(loading || !selectedDoctor || !selectedService) ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700 hover:shadow-primary-200 transform hover:-translate-y-0.5'}`}>
+                  ${(loading || blockReason) ? 'bg-gray-400 cursor-not-allowed opacity-80' : 'bg-primary-600 hover:bg-primary-700 hover:shadow-primary-200 transform hover:-translate-y-0.5'}`}>
                 {loading ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -613,6 +677,13 @@ export default function BookAppointmentPage() {
                   </>
                 )}
               </button>
+
+              {blockReason && !loading && (
+                <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
+                  <FiAlertCircle size={16} className="flex-shrink-0 mt-0.5 text-amber-500" />
+                  <span>{blockReason}</span>
+                </div>
+              )}
 
               <div className="text-center">
                 <Link to="/login" className="text-xs font-bold text-gray-400 hover:text-primary-600 transition-colors uppercase tracking-widest">

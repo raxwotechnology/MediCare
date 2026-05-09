@@ -241,18 +241,29 @@ export default function DoctorAppointments() {
               </button>
             </div>
             <div className="space-y-2">
-              <div className="grid grid-cols-12 gap-2 text-xs text-gray-500 px-1">
+              <div className="hidden sm:grid grid-cols-12 gap-2 text-xs text-gray-500 px-1">
                 <span className="col-span-5">Medicine</span><span className="col-span-4">Dosage</span><span className="col-span-2">Qty</span>
               </div>
               {medicines.map((med, i) => (
-                <div key={i} className="grid grid-cols-12 gap-2 items-center">
-                  <input placeholder="Name" value={med.name} onChange={e => updateMed(i, 'name', e.target.value)} className="input-field col-span-5 text-sm" />
-                  <input placeholder="e.g. 500mg 3×" value={med.dosage} onChange={e => updateMed(i, 'dosage', e.target.value)} className="input-field col-span-4 text-sm" />
-                  <input type="number" min="1" value={med.quantity} onChange={e => updateMed(i, 'quantity', e.target.value)} className="input-field col-span-2 text-sm" />
-                  <button type="button" onClick={() => removeMed(i)} disabled={medicines.length === 1}
-                    className="col-span-1 text-red-400 hover:text-red-600 disabled:opacity-30 p-1 text-center">
-                    <FiTrash2 size={14} />
-                  </button>
+                <div key={i} className="flex flex-col sm:grid sm:grid-cols-12 gap-2 items-center p-2 sm:p-0 bg-gray-50 sm:bg-transparent rounded-lg sm:rounded-none">
+                  <div className="w-full sm:contents">
+                    <label className="block sm:hidden text-xs text-gray-500 mb-1">Medicine</label>
+                    <input placeholder="Name" value={med.name} onChange={e => updateMed(i, 'name', e.target.value)} className="input-field sm:col-span-5 text-sm w-full" />
+                  </div>
+                  <div className="flex gap-2 w-full sm:contents">
+                    <div className="flex-1 sm:contents">
+                      <label className="block sm:hidden text-xs text-gray-500 mb-1">Dosage</label>
+                      <input placeholder="e.g. 500mg 3×" value={med.dosage} onChange={e => updateMed(i, 'dosage', e.target.value)} className="input-field sm:col-span-4 text-sm w-full" />
+                    </div>
+                    <div className="w-20 sm:contents">
+                      <label className="block sm:hidden text-xs text-gray-500 mb-1">Qty</label>
+                      <input type="number" min="1" value={med.quantity} onChange={e => updateMed(i, 'quantity', e.target.value)} className="input-field sm:col-span-2 text-sm w-full" />
+                    </div>
+                    <button type="button" onClick={() => removeMed(i)} disabled={medicines.length === 1}
+                      className="sm:col-span-1 text-red-400 hover:text-red-600 disabled:opacity-30 p-1 text-center self-end">
+                      <FiTrash2 size={14} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

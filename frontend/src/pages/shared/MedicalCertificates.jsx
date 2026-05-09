@@ -30,68 +30,107 @@ const getLogoBase64 = async () => {
   } catch { return null; }
 };
 
-const buildCertHtml = (cert, logoSrc) => {
+const buildCertHtml = (cert, logoSrc, mode = 'print') => {
   const logoHtml = logoSrc
-    ? `<img src="${logoSrc}" alt="${CLINIC.name}" style="height:72px;object-fit:contain;display:block;margin:0 auto 8px;" />`
+    ? `<img src="${logoSrc}" alt="${CLINIC.name}" style="height:64px;object-fit:contain;display:block;margin:0 auto 8px;" />`
     : '';
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Medical Certificate #${cert.certificateNumber}</title>
+
+  const safeName = (cert.patientName || 'patient').replace(/\s+/g, '-');
+  const certNo = `MC-${String(cert.certificateNumber).padStart(4, '0')}`;
+
+  const pdfScript = mode === 'download' ? `
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
+    <script>
+      function generatePDF() {
+        var btn = document.getElementById('pdf-btn');
+        if (btn) btn.style.display = 'none';
+        html2pdf().set({
+          margin: 0,
+          filename: 'medical-cert-${safeName}-${certNo}.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        }).from(document.getElementById('cert-root')).save().then(function(){
+          if (btn) btn.style.display = '';
+        });
+      }
+      window.addEventListener('load', function(){ setTimeout(generatePDF, 700); });
+    <\/script>` : '';
+
+  const pdfBtn = mode === 'download'
+    ? `<div style="text-align:center;margin:16px 0 4px"><button id="pdf-btn" onclick="generatePDF()" style="background:#000;color:#fff;border:none;padding:10px 28px;font-size:13px;font-weight:700;letter-spacing:.05em;border-radius:3px;cursor:pointer;font-family:Arial,sans-serif;">⬇ Download PDF</button></div>`
+    : '';
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Medical Certificate ${certNo}</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Inter:wght@400;600;700&display=swap');
-    body{font-family:'Inter',sans-serif;margin:0;padding:32px;color:#1a1a1a;font-size:13px;background:#fff}
-    .page{max-width:700px;margin:0 auto;border:2px solid #1e3a5f;padding:32px;border-radius:4px}
-    .header{text-align:center;border-bottom:3px double #1e3a5f;padding-bottom:18px;margin-bottom:20px}
-    .clinic-name{font-family:'Merriweather',serif;font-size:22px;font-weight:700;color:#1e3a5f;margin-bottom:4px}
-    .clinic-sub{font-size:12px;color:#4b5563;line-height:1.8}
-    .cert-title{font-family:'Merriweather',serif;font-size:18px;font-weight:700;color:#1e3a5f;text-align:center;margin:18px 0 20px;text-transform:uppercase;letter-spacing:1px}
-    .cert-number{text-align:center;font-size:12px;color:#6b7280;margin-bottom:16px}
-    .body-text{font-size:14px;line-height:2;color:#1a1a1a}
-    .field{border-bottom:1px solid #9ca3af;display:inline-block;min-width:160px;font-weight:600;padding:0 4px}
-    .section{margin:16px 0;padding:14px 18px;background:#f8faff;border-left:4px solid #1e3a5f;border-radius:0 6px 6px 0}
-    .section-label{font-size:10px;font-weight:700;letter-spacing:0.1em;color:#1e3a5f;text-transform:uppercase;margin-bottom:6px}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
-    .field-block{margin-bottom:8px}
-    .field-label{font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.05em}
-    .field-value{font-size:13px;font-weight:700;color:#111827;border-bottom:1px solid #d1d5db;padding-bottom:2px;margin-top:2px}
-    .signature-row{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:40px}
-    .sig-box{text-align:center}
-    .sig-line{border-top:1px solid #374151;padding-top:6px;font-size:11px;color:#6b7280}
-    .stamp-box{width:100px;height:80px;border:2px dashed #d1d5db;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:10px;margin:8px auto}
-    .footer{margin-top:24px;text-align:center;font-size:10px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:12px}
-    @media print{body{padding:0}.page{border:none;padding:20px}}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    @page { size: A4; margin: 6.35mm; }
+    body { font-family: 'Times New Roman', Times, serif; color: #000; background: #fff; font-size: 11.5pt; }
+    #cert-root { width: 210mm; min-height: 297mm; padding: 6.35mm; margin: 0 auto; }
+    .inner { border: 2px solid #000; padding: 22px 26px; }
+    .header { text-align: center; border-bottom: 3px double #000; padding-bottom: 14px; margin-bottom: 16px; }
+    .clinic-name { font-size: 16pt; font-weight: 700; letter-spacing: .04em;  }
+    .clinic-sub { font-size: 8.5pt; color: #444; line-height: 1.7; font-family: Arial, sans-serif; }
+    .cert-title { font-size: 13pt; font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: .1em; margin: 12px 0 3px; font-family: Arial, sans-serif; }
+    .cert-number { text-align: center; font-size: 8.5pt; color: #555; font-family: Arial, sans-serif; margin-bottom: 14px; }
+    .body-text { font-size: 11pt; line-height: 1.9; margin-bottom: 10px; }
+    .val { font-weight: 700; }
+    .diag-box { margin: 12px 0; padding: 10px 14px; border-left: 4px solid #000; background: #f5f5f5; }
+    .diag-label { font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; font-family: Arial, sans-serif; margin-bottom: 3px; color: #333; }
+    .diag-value { font-size: 11.5pt; font-weight: 700; }
+    .diag-remark { font-size: 9.5pt; color: #333; margin-top: 5px; font-family: Arial, sans-serif; }
+    .sig-row { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; margin-top: 32px; page-break-inside: avoid; }
+    .sig-box { text-align: center; }
+    .sig-space { height: 52px; }
+    .sig-line { border-top: 1px solid #000; padding-top: 6px; font-size: 8.5pt; color: #333; font-family: Arial, sans-serif; line-height: 1.6; }
+    .stamp-box { width: 80px; height: 64px; border: 1.5px dashed #999; margin: 4px auto; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 8pt; font-family: Arial, sans-serif; }
+    .footer { margin-top: 18px; text-align: center; font-size: 7.5pt; color: #777; border-top: 1px solid #ccc; padding-top: 9px; font-family: Arial, sans-serif; line-height: 1.6; }
+    @media print {
+      body { margin: 0; }
+      #cert-root { padding: 6.35mm; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      #pdf-btn { display: none !important; }
+      .sig-row { page-break-inside: avoid; }
+    }
   </style>
-</head><body><div class="page">
+  ${pdfScript}
+</head><body>
+<div id="cert-root"><div class="inner">
   <div class="header">
     ${logoHtml}
     <div class="clinic-name">${CLINIC.name}</div>
     <div class="clinic-sub">${CLINIC.address}</div>
     <div class="clinic-sub">Tel: ${CLINIC.phone} &nbsp;|&nbsp; ${CLINIC.email}</div>
   </div>
+
   <div class="cert-title">Medical Certificate</div>
-  <div class="cert-number">Certificate No: <strong>MC-${String(cert.certificateNumber).padStart(4,'0')}</strong> &nbsp;|&nbsp; Issued: ${fmt(cert.createdAt)}</div>
+  <div class="cert-number">Certificate No: <strong>${certNo}</strong> &nbsp;&bull;&nbsp; Issued: ${fmt(cert.createdAt)}</div>
 
-  <p class="body-text">This is to certify that <span class="field">${cert.patientName}</span> , aged <span class="field">${cert.age}</span> years, Gender: <span class="field">${cert.gender}</span>, NIC/Student ID: <span class="field">${cert.nicOrStudentId}</span> was examined by me on <strong>${fmt(cert.examinationDate)}</strong>.</p>
+  <p class="body-text">This is to certify that <span class="val">${cert.patientName}</span>, aged <span class="val">${cert.age}</span> years, Gender: <span class="val">${cert.gender}</span>, NIC / Student ID: <span class="val">${cert.nicOrStudentId}</span>, was examined by me on <span class="val">${fmt(cert.examinationDate)}</span>.</p>
 
-  <div class="section">
-    <div class="section-label">Diagnosis</div>
-    <div style="font-size:14px;font-weight:600;color:#1a1a1a">${cert.diagnosis}</div>
-    ${cert.remarks ? `<div style="margin-top:8px;font-size:12px;color:#4b5563"><strong>Remarks:</strong> ${cert.remarks}</div>` : ''}
+  <div class="diag-box">
+    <div class="diag-label">Diagnosis</div>
+    <div class="diag-value">${cert.diagnosis}</div>
+    ${cert.remarks ? `<div class="diag-remark"><strong>Remarks:</strong> ${cert.remarks}</div>` : ''}
   </div>
 
-  <p class="body-text">The patient is certified to be <strong>unfit for examinations / academic duties</strong> from <span class="field">${fmt(cert.unfitFromDate)}</span> to <span class="field">${fmt(cert.unfitToDate)}</span> (inclusive).</p>
+  <p class="body-text">The above-named patient is hereby certified to be <strong>unfit for examinations / academic duties</strong> from <span class="val">${fmt(cert.unfitFromDate)}</span> to <span class="val">${fmt(cert.unfitToDate)}</span> (inclusive).</p>
 
-  <div class="signature-row">
+  <div class="sig-row">
     <div class="sig-box">
-      <div style="height:60px"></div>
+      <div class="sig-space"></div>
       <div class="sig-line"><strong>Dr. ${cert.doctorName}</strong><br>SLMC Reg. No: ${cert.slmcNumber}<br>${cert.hospitalName}</div>
     </div>
     <div class="sig-box">
-      <div class="stamp-box">Official Stamp</div>
+      <div class="sig-space"></div>
       <div class="sig-line">Hospital / Clinic Seal</div>
     </div>
   </div>
 
-  <div class="footer">${CLINIC.name} &bull; This certificate is computer-generated and valid without a physical signature if issued via official electronic system.</div>
-</div></body></html>`;
+  <div class="footer">${CLINIC.name} &bull; This certificate is computer-generated and valid without a physical signature if issued via an official electronic system.</div>
+  ${pdfBtn}
+</div></div>
+</body></html>`;
 };
 
 /* ── Empty form ── */
@@ -217,21 +256,17 @@ export default function MedicalCertificates() {
   const handlePrint = async (cert) => {
     const logo = await getLogoBase64();
     const win = window.open('', '_blank', 'width=800,height=1000');
-    win.document.write(buildCertHtml(cert, logo));
+    win.document.write(buildCertHtml(cert, logo, 'print'));
     win.document.close();
     setTimeout(() => win.print(), 500);
   };
 
   const handleDownload = async (cert) => {
     const logo = await getLogoBase64();
-    const blob = new Blob([buildCertHtml(cert, logo)], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `medical-cert-${cert.patientName.replace(/\s+/g, '-')}-MC${cert.certificateNumber}.html`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success('Certificate downloaded!');
+    const win = window.open('', '_blank', 'width=800,height=1000');
+    win.document.write(buildCertHtml(cert, logo, 'download'));
+    win.document.close();
+    toast.success('PDF download starting...');
   };
 
   const clearFilters = () => { setSearch(''); setFilterDoctor(''); setFilterFrom(''); setFilterTo(''); };
@@ -444,11 +479,11 @@ export default function MedicalCertificates() {
                   <FiCheckCircle size={12} /> Doctor &amp; Clinic Info
                 </p>
                 <div className="mb-3">
-                    <label className="label-text">Select Doctor (Select to auto-fill) *</label>
-                    <select name="selectedDoctorId" onChange={handleChange} className="input-field">
-                      <option value="">-- Choose a Doctor --</option>
-                      {doctors.map(d => <option key={d._id} value={d._id}>Dr. {d.name} {d.slmcNumber ? `(${d.slmcNumber})` : ''}</option>)}
-                    </select>
+                  <label className="label-text">Select Doctor (Select to auto-fill) *</label>
+                  <select name="selectedDoctorId" onChange={handleChange} className="input-field">
+                    <option value="">-- Choose a Doctor --</option>
+                    {doctors.map(d => <option key={d._id} value={d._id}>Dr. {d.name} {d.slmcNumber ? `(${d.slmcNumber})` : ''}</option>)}
+                  </select>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>

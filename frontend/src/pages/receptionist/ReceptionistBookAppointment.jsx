@@ -71,6 +71,7 @@ export default function ReceptionistBookAppointment() {
   const [bookedSuggestedTime, setBookedSuggestedTime] = useState(null); // suggested time after submit
   const [form, setForm] = useState({ patientName: '', patientPhone: '', appointmentDate: new Date().toISOString().split('T')[0] });
   const [loading, setLoading] = useState(false);
+  const [doctorsLoading, setDoctorsLoading] = useState(true);
   const [phoneLookup, setPhoneLookup] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedSpec, setSelectedSpec] = useState('All');
@@ -80,7 +81,11 @@ export default function ReceptionistBookAppointment() {
   const doctorsPerPage = 6;
 
   useEffect(() => {
-    doctorService.getPublic().then(r => setDoctors(r.data)).catch(() => { });
+    setDoctorsLoading(true);
+    doctorService.getPublic()
+      .then(r => setDoctors(r.data))
+      .catch(() => {})
+      .finally(() => setDoctorsLoading(false));
   }, []);
 
   // Fetch which dates already have appointments for the chosen doctor
@@ -239,6 +244,24 @@ export default function ReceptionistBookAppointment() {
               </select>
             </div>
             <div className="grid sm:grid-cols-2 gap-2 max-h-100 overflow-y-auto pr-1">
+              {doctorsLoading ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="flex flex-col p-4 rounded-2xl border-2 border-gray-100 animate-pulse">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 bg-gray-200 rounded-lg flex-shrink-0" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-3.5 bg-gray-200 rounded w-3/4" />
+                        <div className="h-2.5 bg-gray-100 rounded w-1/2" />
+                      </div>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <div className="h-5 bg-gray-100 rounded w-20" />
+                      <div className="h-5 bg-gray-100 rounded w-16" />
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <>
               {filteredDoctors.length === 0 && <p className="text-sm text-gray-400 col-span-full text-center py-6">No doctors found</p>}
               {currentDoctors.map(doc => {
                 const hasSchedule = doc.availability?.length > 0;
@@ -315,8 +338,10 @@ export default function ReceptionistBookAppointment() {
                   </button>
                 );
               })}
+              </>
+              )}
             </div>
-            {totalPages > 1 && (
+            {!doctorsLoading && totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 mt-3">
 
                 <button

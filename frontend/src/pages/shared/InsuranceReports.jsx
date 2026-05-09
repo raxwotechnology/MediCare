@@ -24,10 +24,10 @@ const CLINIC = {
 };
 
 const STATUS_COLORS = {
-  pending:   'bg-amber-50 text-amber-700 border-amber-200',
+  pending: 'bg-amber-50 text-amber-700 border-amber-200',
   submitted: 'bg-blue-50 text-blue-700 border-blue-200',
-  approved:  'bg-emerald-50 text-emerald-700 border-emerald-200',
-  rejected:  'bg-red-50 text-red-700 border-red-200',
+  approved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  rejected: 'bg-red-50 text-red-700 border-red-200',
 };
 const STATUS_OPTS = ['pending', 'submitted', 'approved', 'rejected'];
 
@@ -44,89 +44,148 @@ const getLogoBase64 = async () => {
   } catch { return null; }
 };
 
-const buildReportHtml = (r, logoSrc) => {
+const buildReportHtml = (r, logoSrc, mode = 'print') => {
   const logoHtml = logoSrc
-    ? `<img src="${logoSrc}" alt="${CLINIC.name}" style="height:64px;object-fit:contain;display:block;margin:0 auto 8px;" />`
+    ? `<img src="${logoSrc}" alt="${CLINIC.name}" style="height:58px;object-fit:contain;display:block;margin:0 auto 8px;" />`
     : '';
   const total = totalOf(r);
   const docAttach = (r.attachedDocuments || []).map(d =>
-    `<li>${d.label}${d.note ? ' — ' + d.note : ''}</li>`
+    `<li style="font-family:Arial,sans-serif;font-size:9.5pt;padding:3px 0">${d.label}${d.note ? ' — ' + d.note : ''}</li>`
   ).join('');
 
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Insurance Report #${r.reportNumber}</title>
+  const safeName = (r.patientName || 'patient').replace(/\s+/g, '-');
+  const reportNo = `IR-${String(r.reportNumber).padStart(4, '0')}`;
+
+  const pdfScript = mode === 'download' ? `
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
+    <script>
+      function generatePDF() {
+        var btn = document.getElementById('pdf-btn');
+        if (btn) btn.style.display = 'none';
+        html2pdf().set({
+          margin: 0,
+          filename: 'insurance-report-${safeName}-${reportNo}.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        }).from(document.getElementById('report-root')).save().then(function(){
+          if (btn) btn.style.display = '';
+        });
+      }
+      window.addEventListener('load', function(){ setTimeout(generatePDF, 700); });
+    <\/script>` : '';
+
+  const pdfBtn = mode === 'download'
+    ? `<div style="text-align:center;margin:16px 0 4px"><button id="pdf-btn" onclick="generatePDF()" style="background:#000;color:#fff;border:none;padding:10px 28px;font-size:13px;font-weight:700;letter-spacing:.05em;border-radius:3px;cursor:pointer;font-family:Arial,sans-serif;">⬇ Download PDF</button></div>`
+    : '';
+
+  const RHTML = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Insurance Report ${reportNo}</title>
   <style>
-    body{font-family:'Segoe UI',sans-serif;margin:0;padding:28px;color:#1a1a1a;font-size:13px}
-    .page{max-width:750px;margin:0 auto}
-    .header{text-align:center;border-bottom:2px solid #2563eb;padding-bottom:14px;margin-bottom:18px}
-    .clinic-name{font-size:22px;font-weight:800;color:#2563eb;margin-bottom:4px}
-    .clinic-sub{font-size:12px;color:#4b5563;line-height:1.7}
-    .report-title{text-align:center;font-size:17px;font-weight:700;color:#1e40af;margin:14px 0;letter-spacing:.5px}
-    h3{font-size:12px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:.07em;margin:16px 0 8px;border-bottom:1px solid #e0e7ff;padding-bottom:4px}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .field-block{margin-bottom:6px}
-    .fl{font-size:10px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:.05em}
-    .fv{font-size:13px;font-weight:600;color:#111827}
-    table{width:100%;border-collapse:collapse;margin-top:8px}
-    th{background:#2563eb;color:#fff;padding:8px;text-align:left;font-size:11px}
-    td{padding:7px 8px;border-bottom:1px solid #f0f0f0}
-    .total-row{background:#eef2ff;font-weight:700}
-    .status{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;text-transform:capitalize;border:1px solid currentColor}
-    .footer{margin-top:20px;text-align:center;color:#9ca3af;font-size:10px;border-top:1px solid #e5e7eb;padding-top:10px}
-    @media print{body{padding:10px}}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    @page { size: A4; margin: 6.35mm; }
+    body { font-family: 'Times New Roman', Times, serif; color: #000; background: #fff; font-size: 11pt; }
+    #report-root { width: 210mm; min-height: 297mm; padding: 6.35mm; margin: 0 auto; }
+    .header { text-align: center; border-top: 3px solid #000; border-bottom: 3px solid #000; padding: 12px 0; margin-bottom: 14px; }
+    .clinic-name { font-size: 16pt; font-weight: 700; letter-spacing: .04em;  }
+    .clinic-sub { font-size: 8.5pt; color: #444; line-height: 1.7; font-family: Arial, sans-serif; }
+    .report-title { text-align: center; font-size: 12pt; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin: 10px 0; font-family: Arial, sans-serif; }
+    h3 { font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; font-family: Arial, sans-serif; margin: 12px 0 6px; border-bottom: 1.5px solid #000; padding-bottom: 2px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; margin-bottom: 2px; }
+    .fl { font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #555; font-family: Arial, sans-serif; margin-bottom: 1px; }
+    .fv { font-size: 10pt; font-weight: 700; font-family: Arial, sans-serif; padding-bottom: 1px; }
+    .fv-wide { font-size: 10pt; font-weight: 600; font-family: Arial, sans-serif; margin-top: 2px; }
+    table.cost { width: 100%; border-collapse: collapse; margin-top: 6px; }
+    table.cost thead th { background: #000; color: #fff; padding: 6px 9px; text-align: left; font-size: 8.5pt; font-family: Arial, sans-serif; text-transform: uppercase; letter-spacing: .04em; }
+    table.cost thead th.th-r { text-align: right; }
+    table.cost tbody td { padding: 6px 9px; border-bottom: 1px solid #ddd; font-family: Arial, sans-serif; font-size: 10pt; }
+    table.cost tbody td.td-r { text-align: right; font-family: 'Courier New', monospace; }
+    table.cost tfoot td { padding: 8px 9px; border-top: 2px solid #000; font-family: Arial, sans-serif; font-size: 10pt; font-weight: 700; }
+    table.cost tfoot td.td-total { text-align: right; font-family: 'Courier New', monospace; font-size: 12.5pt; font-weight: 800; }
+    .sig-row { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; margin-top: 28px; page-break-inside: avoid; }
+    .sig-box { text-align: center; }
+    .sig-space { height: 50px; }
+    .sig-line { border-top: 1px solid #000; padding-top: 6px; font-size: 8.5pt; color: #333; font-family: Arial, sans-serif; line-height: 1.6; }
+    .stamp-box { width: 76px; height: 60px; border: 1.5px dashed #999; margin: 4px auto; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 8pt; font-family: Arial, sans-serif; }
+    .footer { margin-top: 18px; text-align: center; font-size: 7.5pt; color: #777; border-top: 1px solid #ccc; padding-top: 9px; font-family: Arial, sans-serif; line-height: 1.6; }
+    @media print {
+      body { margin: 0; }
+      #report-root { padding: 6.35mm; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      table.cost thead th { background: #000 !important; color: #fff !important; }
+      #pdf-btn { display: none !important; }
+      .sig-row { page-break-inside: avoid; }
+    }
   </style>
-</head><body><div class="page">
+  ${pdfScript}
+</head><body>
+<div id="report-root">
   <div class="header">
     ${logoHtml}
     <div class="clinic-name">${CLINIC.name}</div>
     <div class="clinic-sub">${CLINIC.address} &nbsp;|&nbsp; ${CLINIC.phone} &nbsp;|&nbsp; ${CLINIC.email}</div>
   </div>
-  <div class="report-title">Medical Insurance Report — Ref #IR-${String(r.reportNumber).padStart(4,'0')}</div>
+
+  <div class="report-title">Medical Insurance Report &mdash; Ref ${reportNo}</div>
 
   <h3>Patient Information</h3>
   <div class="grid2">
-    <div class="field-block"><div class="fl">Full Name</div><div class="fv">${r.patientName}</div></div>
-    <div class="field-block"><div class="fl">NIC</div><div class="fv">${r.nic}</div></div>
-    <div class="field-block"><div class="fl">Phone</div><div class="fv">${r.contactPhone || '—'}</div></div>
-    <div class="field-block"><div class="fl">Email</div><div class="fv">${r.contactEmail || '—'}</div></div>
+    <div><div class="fl">Full Name</div><div class="fv">${r.patientName}</div></div>
+    <div><div class="fl">NIC</div><div class="fv">${r.nic}</div></div>
+    <div><div class="fl">Phone</div><div class="fv">${r.contactPhone || '—'}</div></div>
+    <div><div class="fl">Email</div><div class="fv">${r.contactEmail || '—'}</div></div>
   </div>
 
   <h3>Insurance Details</h3>
   <div class="grid2">
-    <div class="field-block"><div class="fl">Insurance Company</div><div class="fv">${r.insuranceCompany}</div></div>
-    <div class="field-block"><div class="fl">Policy Number</div><div class="fv">${r.policyNumber}</div></div>
-    <div class="field-block"><div class="fl">Claim Status</div><div class="fv">${r.claimStatus.toUpperCase()}</div></div>
-    <div class="field-block"><div class="fl">Report Date</div><div class="fv">${fmt(r.createdAt)}</div></div>
+    <div><div class="fl">Insurance Company</div><div class="fv">${r.insuranceCompany}</div></div>
+    <div><div class="fl">Policy Number</div><div class="fv">${r.policyNumber}</div></div>
+    <div><div class="fl">Claim Status</div><div class="fv">${r.claimStatus.toUpperCase()}</div></div>
+    <div><div class="fl">Report Date</div><div class="fv">${fmt(r.createdAt)}</div></div>
   </div>
 
   <h3>Hospital &amp; Medical Details</h3>
   <div class="grid2">
-    <div class="field-block"><div class="fl">Hospital</div><div class="fv">${r.hospitalName}</div></div>
-    <div class="field-block"><div class="fl">Admission Date</div><div class="fv">${fmt(r.admissionDate)}</div></div>
-    <div class="field-block"><div class="fl">Discharge Date</div><div class="fv">${fmt(r.dischargeDate)}</div></div>
-    <div class="field-block"><div class="fl">Diagnosis</div><div class="fv">${r.diagnosis}</div></div>
-    <div class="field-block"><div class="fl">Attending Doctor</div><div class="fv">Dr. ${r.doctorName || '—'}</div></div>
-    <div class="field-block"><div class="fl">Doctor SLMC Reg</div><div class="fv">${r.slmcNumber || '—'}</div></div>
+    <div><div class="fl">Hospital</div><div class="fv">${r.hospitalName}</div></div>
+    <div><div class="fl">Admission Date</div><div class="fv">${fmt(r.admissionDate)}</div></div>
+    <div><div class="fl">Discharge Date</div><div class="fv">${fmt(r.dischargeDate)}</div></div>
+    <div><div class="fl">Diagnosis</div><div class="fv">${r.diagnosis}</div></div>
+    <div><div class="fl">Attending Doctor</div><div class="fv">Dr. ${r.doctorName || '—'}</div></div>
+    <div><div class="fl">SLMC Reg No</div><div class="fv">${r.slmcNumber || '—'}</div></div>
   </div>
-  ${r.treatmentDetails ? `<div class="field-block"><div class="fl">Treatment Details</div><div class="fv">${r.treatmentDetails}</div></div>` : ''}
-  ${r.doctorNotes ? `<div class="field-block"><div class="fl">Doctor Notes</div><div class="fv">${r.doctorNotes}</div></div>` : ''}
+  ${r.treatmentDetails ? `<div style="margin-top:7px"><div class="fl">Treatment Details</div><div class="fv-wide">${r.treatmentDetails}</div></div>` : ''}
+  ${r.doctorNotes ? `<div style="margin-top:7px"><div class="fl">Doctor Notes</div><div class="fv-wide">${r.doctorNotes}</div></div>` : ''}
 
   <h3>Cost Breakdown</h3>
-  <table>
-    <thead><tr><th>Description</th><th style="text-align:right">Amount (LKR)</th></tr></thead>
+  <table class="cost">
+    <thead><tr><th>Description</th><th class="th-r">Amount (LKR)</th></tr></thead>
     <tbody>
-      <tr><td>Consultation Fee</td><td style="text-align:right">${Number(r.consultationFee||0).toFixed(2)}</td></tr>
-      <tr><td>Lab / Test Charges</td><td style="text-align:right">${Number(r.labTestCharges||0).toFixed(2)}</td></tr>
-      <tr><td>Medicine Cost</td><td style="text-align:right">${Number(r.medicineCost||0).toFixed(2)}</td></tr>
-      <tr><td>Room Charges</td><td style="text-align:right">${Number(r.roomCharges||0).toFixed(2)}</td></tr>
-      <tr><td>Other Charges</td><td style="text-align:right">${Number(r.otherCharges||0).toFixed(2)}</td></tr>
-      <tr class="total-row"><td><strong>Grand Total</strong></td><td style="text-align:right;color:#1d4ed8;font-size:16px"><strong>LKR ${total.toFixed(2)}</strong></td></tr>
+      <tr><td>Consultation Fee</td><td class="td-r">${Number(r.consultationFee || 0).toFixed(2)}</td></tr>
+      <tr><td>Lab / Test Charges</td><td class="td-r">${Number(r.labTestCharges || 0).toFixed(2)}</td></tr>
+      <tr><td>Medicine Cost</td><td class="td-r">${Number(r.medicineCost || 0).toFixed(2)}</td></tr>
+      <tr><td>Room Charges</td><td class="td-r">${Number(r.roomCharges || 0).toFixed(2)}</td></tr>
+      <tr><td>Other Charges</td><td class="td-r">${Number(r.otherCharges || 0).toFixed(2)}</td></tr>
     </tbody>
+    <tfoot><tr><td><strong>Grand Total</strong></td><td class="td-total">LKR ${total.toFixed(2)}</td></tr></tfoot>
   </table>
 
-  ${docAttach ? `<h3>Attached Documents</h3><ul>${docAttach}</ul>` : ''}
+  ${docAttach ? `<h3>Attached Documents</h3><ul style="padding-left:18px;margin-top:4px">${docAttach}</ul>` : ''}
+
+  <div class="sig-row">
+    <div class="sig-box">
+      <div class="sig-space"></div>
+      <div class="sig-line"><strong>Dr. ${r.doctorName || '—'}</strong><br>SLMC Reg. No: ${r.slmcNumber || '—'}<br>${r.hospitalName}</div>
+    </div>
+    <div class="sig-box">
+      <div class="sig-space"></div>
+      <div class="sig-line">Hospital / Clinic Seal</div>
+    </div>
+  </div>
 
   <div class="footer">${CLINIC.name} &bull; Computer-generated insurance report &bull; ${new Date().toLocaleString()}</div>
-</div></body></html>`;
+  ${pdfBtn}
+</div>
+</body></html>`;
+  return RHTML;
 };
 
 /* ── Empty form ── */
@@ -277,21 +336,17 @@ export default function InsuranceReports() {
   const handlePrint = async (r) => {
     const logo = await getLogoBase64();
     const win = window.open('', '_blank', 'width=820,height=1050');
-    win.document.write(buildReportHtml(r, logo));
+    win.document.write(buildReportHtml(r, logo, 'print'));
     win.document.close();
     setTimeout(() => win.print(), 500);
   };
 
   const handleDownload = async (r) => {
     const logo = await getLogoBase64();
-    const blob = new Blob([buildReportHtml(r, logo)], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `insurance-report-${r.patientName.replace(/\s+/g, '-')}-IR${r.reportNumber}.html`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success('Report downloaded!');
+    const win = window.open('', '_blank', 'width=820,height=1050');
+    win.document.write(buildReportHtml(r, logo, 'download'));
+    win.document.close();
+    toast.success('PDF download starting...');
   };
 
   const clearFilters = () => {
@@ -319,7 +374,7 @@ export default function InsuranceReports() {
       {summary && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <SummaryCard icon={FiFileText} label="Total Reports" value={summary.total} color="border-primary-500 text-primary-600" />
-          <SummaryCard icon={FiDollarSign} label="Total Claimed" value={`LKR ${Number(summary.totalAmount||0).toLocaleString()}`} color="border-emerald-500 text-emerald-600" small />
+          <SummaryCard icon={FiDollarSign} label="Total Claimed" value={`LKR ${Number(summary.totalAmount || 0).toLocaleString()}`} color="border-emerald-500 text-emerald-600" small />
           <SummaryCard icon={FiCheckCircle} label="Approved" value={summary.byStatus?.approved ?? 0} color="border-teal-500 text-teal-600" />
           <SummaryCard icon={FiActivity} label="Pending" value={summary.byStatus?.pending ?? 0} color="border-amber-500 text-amber-600" />
         </div>
@@ -365,7 +420,7 @@ export default function InsuranceReports() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-100">
-                  {['Ref #','Patient','Policy','Insurance Co.','Admission','Total','Status','Actions'].map(h => (
+                  {['Ref #', 'Patient', 'Policy', 'Insurance Co.', 'Admission', 'Total', 'Status', 'Actions'].map(h => (
                     <th key={h} className="text-left px-4 py-4 font-semibold text-gray-600 text-xs uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
@@ -375,7 +430,7 @@ export default function InsuranceReports() {
                   <tr key={r._id} className="hover:bg-gray-50/70 transition-colors">
                     <td className="px-4 py-4">
                       <span className="font-mono text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
-                        IR-{String(r.reportNumber).padStart(4,'0')}
+                        IR-{String(r.reportNumber).padStart(4, '0')}
                       </span>
                     </td>
                     <td className="px-4 py-4">
@@ -433,7 +488,7 @@ export default function InsuranceReports() {
               {/* Patient */}
               <section>
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2"><FiUser size={12} />Patient Info</p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="col-span-2 sm:col-span-1">
                     <label className="label-text">Patient Name *</label>
                     <input name="patientName" required value={form.patientName} onChange={handleChange} className="input-field" placeholder="Full name" />
@@ -456,7 +511,7 @@ export default function InsuranceReports() {
               {/* Insurance */}
               <section>
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2"><FiTag size={12} />Insurance Details</p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="label-text">Insurance Company *</label>
                     <input name="insuranceCompany" required value={form.insuranceCompany} onChange={handleChange} className="input-field" placeholder="e.g. AIA Insurance" />
@@ -471,7 +526,7 @@ export default function InsuranceReports() {
               {/* Medical */}
               <section>
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2"><FiActivity size={12} />Medical Details</p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="label-text">Hospital Name *</label>
                     <input name="hospitalName" required value={form.hospitalName} onChange={handleChange} className="input-field" />

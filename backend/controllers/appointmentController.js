@@ -529,6 +529,37 @@ export const getActiveDates = async (req, res) => {
  * doctor, so the patient/receptionist booking calendar can highlight them.
  * Requires ?doctorId=... in the query.
  */
+/**
+ * Public endpoint — lets a patient look up their own appointment by
+ * phone number + date + doctor.  Returns safe fields only (no payment
+ * details) so no authentication is required.
+ */
+export const checkAppointment = async (req, res) => {
+  try {
+    const { phone, date, doctorId } = req.query;
+    if (!phone || !date) {
+      return res.status(400).json({ message: 'Phone number and date are required' });
+    }
+
+    const filter = { patientPhone: phone, appointmentDate: date };
+    if (doctorId) filter.doctor = doctorId;
+
+    const appointments = await Appointment.find(filter)
+      .populate('doctor', 'name specialization availability')
+      .populate('service', 'name')
+      .select('patientName queueNumber appointmentDate status doctor doctorName service serviceName price')
+      .sort('queueNumber');
+
+    if (!appointments.length) {
+      return res.status(404).json({ message: 'No appointment found for the provided details' });
+    }
+
+    res.json(appointments);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 export const getActiveDatesPublic = async (req, res) => {
   try {
     const { doctorId } = req.query;

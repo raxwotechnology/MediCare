@@ -90,7 +90,7 @@ export default function DoctorPayments() {
       <PageHeader title="Doctor Payments" subtitle="Track and manage doctor earnings"
         action={<button onClick={() => setShowModal(true)} className="btn-primary flex items-center gap-2"><FiPlus size={16} />New Payment</button>} />
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <StatCard icon={FiDollarSign} label="Total Earned" value={`LKR ${totalEarned.toLocaleString()}`} color="blue" />
         <StatCard icon={FiDollarSign} label="Total Paid Out" value={`LKR ${totalPaid.toLocaleString()}`} color="green" />
         <StatCard icon={FiDollarSign} label="Total Pending" value={`LKR ${totalPending.toLocaleString()}`} color="orange" />
@@ -218,7 +218,7 @@ export default function DoctorPayments() {
               const paid = docSummary.paidAmount || 0;
               const pending = earned - paid;
               return (
-                <div className="mt-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 grid grid-cols-3 gap-3 text-center">
+                <div className="mt-2 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 grid grid-cols-3 sm:grid-cols-3 gap-3 text-center">
                   <div>
                     <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Total Earned</p>
                     <p className="font-bold text-blue-600 text-sm mt-0.5">LKR {earned.toLocaleString()}</p>
@@ -237,7 +237,7 @@ export default function DoctorPayments() {
           </div>
           <div><label className="block text-sm font-medium text-gray-700 mb-1">Amount (LKR) *</label>
             <input type="number" min="0" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} className="input-field" required /></div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div><label className="block text-sm font-medium text-gray-700 mb-1">Period Start</label>
               <input type="date" value={form.periodStart} onChange={e => setForm({ ...form, periodStart: e.target.value })} className="input-field" /></div>
             <div><label className="block text-sm font-medium text-gray-700 mb-1">Period End</label>

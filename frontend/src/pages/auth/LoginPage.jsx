@@ -44,7 +44,7 @@ export default function LoginPage() {
           <p className="text-primary-200 mt-1">Sign in to your account</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
+        <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
           {/* Login type toggle */}
           <div className="flex rounded-lg overflow-hidden border border-gray-200 mb-6">
             {['email', 'phone'].map(type => (

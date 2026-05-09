@@ -8,6 +8,7 @@ import RegisterPage from './pages/auth/RegisterPage';
 
 // Public
 import BookAppointmentPage from './pages/BookAppointmentPage';
+import CheckAppointmentPage from './pages/CheckAppointmentPage';
 
 // Layout
 import DashboardLayout from './components/layout/DashboardLayout';
@@ -26,6 +27,8 @@ import FinanceExpenses from './pages/admin/FinanceExpenses';
 import FinanceExtraIncome from './pages/admin/FinanceExtraIncome';
 import DailyCashierReport from './pages/admin/DailyCashierReport';
 import AuditLogs from './pages/admin/AuditLogs';
+import AuditDetail from './pages/admin/AuditDetail';
+import PatientRecords from './pages/admin/PatientRecords';
 import ServiceReport from './pages/admin/ServiceReport';
 
 // Doctor pages
@@ -79,6 +82,7 @@ function App() {
           {/* Public */}
           <Route path="/" element={<BookAppointmentPage />} />
           <Route path="/book" element={<BookAppointmentPage />} />
+          <Route path="/check-appointment" element={<CheckAppointmentPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/dashboard" element={<ProtectedRoute><RoleRedirect /></ProtectedRoute>} />
@@ -98,6 +102,8 @@ function App() {
             <Route path="expenses" element={<FinanceExpenses />} />
             <Route path="income" element={<FinanceExtraIncome />} />
             <Route path="audit" element={<AuditLogs />} />
+            <Route path="audit-detail" element={<AuditDetail />} />
+            <Route path="patient-records" element={<PatientRecords />} />
             <Route path="cashier-reports" element={<DailyCashierReport />} />
             <Route path="book" element={<ReceptionistBookAppointment />} />
             <Route path="medical-certificates" element={<MedicalCertificates />} />

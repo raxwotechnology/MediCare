@@ -67,6 +67,9 @@ export const appointmentService = {
   // Invoice — record a print event (audit only)
   recordInvoicePrint: (id) => api.patch(`/appointments/${id}/invoice-printed`),
 
+  // Public — patient self-lookup (no auth required)
+  checkAppointment: (params) => api.get('/appointments/check', { params }),
+
   cancel: (id) => api.patch(`/appointments/${id}/cancel`),
   delete: (id) => api.delete(`/appointments/${id}`),
   // Pass { doctorId, excludeCancelled } to filter — used for booking calendars

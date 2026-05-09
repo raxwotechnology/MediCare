@@ -36,7 +36,7 @@ const PayMethodBadge = ({ method }) => {
 };
 
 const TotalsRow = ({ totals }) => (
-  <div className="grid grid-cols-4 gap-2 mt-3">
+  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
     {[
       { label: 'Total',  value: totals.total,  cls: 'bg-gray-800 text-white' },
       { label: 'Cash',   value: totals.cash,   cls: 'bg-emerald-50 text-emerald-700 border border-emerald-100' },
@@ -83,7 +83,7 @@ const SectionHeader = ({ icon: Icon, title, total, open, onToggle, color = 'indi
 // ── Submission form (shared) ──────────────────────────────────────────────────
 function SubmissionForm({ department, denominations, paymentBreakdown, cashierTotal, notes, submitting, alreadySubmitted, submittedBy, submittedAt, onDenomChange, onPaymentChange, onNotesChange, onSubmit }) {
   return (
-    <div className="card h-fit sticky top-6">
+    <div className="card lg:h-fit lg:sticky lg:top-6">
       <div className="flex items-center gap-3 mb-6">
         <div className={"w-10 h-10 rounded-xl flex items-center justify-center " + (alreadySubmitted ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50 text-indigo-600')}>
           {alreadySubmitted ? <FiCheckCircle size={20} /> : <FiDollarSign size={20} />}
@@ -117,7 +117,7 @@ function SubmissionForm({ department, denominations, paymentBreakdown, cashierTo
 
         <div className="space-y-3">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Denominations</p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {DENOMINATIONS.map((d) => (
               <div key={d.key} className="space-y-1">
                 <label className="text-[10px] font-bold text-gray-500 uppercase">{d.val} Notes</label>

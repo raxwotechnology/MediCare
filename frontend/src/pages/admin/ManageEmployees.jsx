@@ -203,7 +203,7 @@ export default function ManageEmployees() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
                 <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="input-field" required={!hasAccount} placeholder="e.g. Kamal Perera" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
                   <input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="input-field" placeholder="+94 77..." />

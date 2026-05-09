@@ -27,7 +27,7 @@ export default function ReceptionistDashboard() {
         <p className="text-gray-500 text-sm mt-1">Today — {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <StatCard icon={FiClock} label="Awaiting Payment" value={pending.length} color="orange" />
         <StatCard icon={FiCalendar} label="Paid / With Doctor" value={paid.length} color="blue" />
         <StatCard icon={FiCheckCircle} label="Completed" value={completed.length} color="green" />

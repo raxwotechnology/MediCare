@@ -121,7 +121,7 @@ export default function ReceptionistExpenses() {
 
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Record New Expense">
         <form onSubmit={handleSave} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-1">Date</label>
               <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className="input-field font-semibold" required />

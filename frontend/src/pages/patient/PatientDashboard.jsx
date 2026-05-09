@@ -26,7 +26,7 @@ export default function PatientDashboard() {
         <p className="text-gray-500 text-sm mt-1">Manage your health appointments</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <StatCard icon={FiClock} label="Pending" value={pending} color="orange" />
         <StatCard icon={FiCalendar} label="Upcoming" value={upcoming} color="blue" />
         <StatCard icon={FiCheckCircle} label="Completed" value={completed} color="green" />

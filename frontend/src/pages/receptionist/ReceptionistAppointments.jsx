@@ -7,7 +7,7 @@ import { printAppointmentInvoice, downloadAppointmentInvoice } from '../../utils
 import toast from 'react-hot-toast';
 import {
   FiCalendar, FiCheck, FiSearch, FiPlus, FiTrash2,
-  FiPrinter, FiDownload, FiFileText, FiClock,
+  FiPrinter, FiDownload, FiFileText, FiClock, FiXCircle,
 } from 'react-icons/fi';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -193,6 +193,19 @@ export default function ReceptionistAppointments() {
     } finally { setProcessing(null); }
   };
 
+  /* ── Cancel pending appointment (no-show) ─────────────────────────────── */
+  const handleCancelAppointment = async (appt) => {
+    if (!window.confirm(`Cancel the appointment for ${appt.patientName}?\nThis marks it as cancelled (no payment taken).`)) return;
+    setProcessing(appt._id);
+    try {
+      await appointmentService.cancel(appt._id);
+      toast.success('Appointment cancelled');
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Error cancelling appointment');
+    } finally { setProcessing(null); }
+  };
+
   /* ── Invoice print / download ──────────────────────────────────────────── */
   const handlePrintInvoice = async (appt) => {
     // Re-fetch to ensure the printed copy includes any populated extras
@@ -359,10 +372,19 @@ export default function ReceptionistAppointments() {
                       </div>
 
                       {appt.status === 'pending' && (
-                        <button onClick={() => openPayModal(appt)} disabled={processing === appt._id}
-                          className="btn-success flex items-center gap-2 whitespace-nowrap">
-                          <FiCheck size={15} />Collect Payment
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => openPayModal(appt)} disabled={processing === appt._id}
+                            className="btn-success flex items-center gap-2 whitespace-nowrap">
+                            <FiCheck size={15} />Collect Payment
+                          </button>
+                          <button
+                            onClick={() => handleCancelAppointment(appt)}
+                            disabled={processing === appt._id}
+                            title="Cancel appointment (no-show)"
+                            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-colors whitespace-nowrap">
+                            <FiXCircle size={14} /> Cancel
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -526,7 +548,9 @@ export default function ReceptionistAppointments() {
                             {s.service?.name || 'Service'}
                           </p>
                           <p className="text-xs text-gray-400 mt-0.5">
-                            Doctor fee: LKR {s.doctorFee !== undefined ? s.doctorFee : '—'}
+                            {!['paid', 'with_doctor', 'completed'].includes(extraAppt?.status) && (
+                              <>Doctor fee: LKR {s.doctorFee !== undefined ? s.doctorFee : '—'}</>
+                            )}
                           </p>
                         </div>
                         <div className="text-right">
@@ -548,9 +572,9 @@ export default function ReceptionistAppointments() {
               )}
             </div>
 
-            {/* Price & doctor fee — auto-filled but editable */}
-            {extraForm.serviceName && (
-              <div className="grid grid-cols-2 gap-3">
+            {/* Price & doctor fee — auto-filled but editable (hidden for paid appointments) */}
+            {extraForm.serviceName && !['paid', 'with_doctor', 'completed'].includes(extraAppt?.status) && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1 block">Patient Price (LKR) *</label>
                   <input type="number" min="0" step="0.01" className="input-field" value={extraForm.price}
@@ -561,12 +585,20 @@ export default function ReceptionistAppointments() {
                   <input type="number" min="0" step="0.01" className="input-field" value={extraForm.doctorFee}
                     onChange={e => setExtraForm(f => ({ ...f, doctorFee: e.target.value }))} />
                 </div>
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1 block">Notes (optional)</label>
                   <input className="input-field" value={extraForm.description}
                     onChange={e => setExtraForm(f => ({ ...f, description: e.target.value }))}
                     placeholder="Any extra detail..." />
                 </div>
+              </div>
+            )}
+            {extraForm.serviceName && ['paid', 'with_doctor', 'completed'].includes(extraAppt?.status) && (
+              <div>
+                <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1 block">Notes (optional)</label>
+                <input className="input-field" value={extraForm.description}
+                  onChange={e => setExtraForm(f => ({ ...f, description: e.target.value }))}
+                  placeholder="Any extra detail..." />
               </div>
             )}
 

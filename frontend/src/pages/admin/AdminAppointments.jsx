@@ -125,7 +125,8 @@ export default function AdminAppointments() {
         <EmptyState message="No appointments match the selected filters." icon={<FiCalendar size={40} />} />
       ) : (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          <table className="table w-full text-left">
+          <div className="overflow-x-auto">
+          <table className="table w-full text-left min-w-[640px]">
             <thead className="bg-gray-50/50 border-b border-gray-100 text-sm">
               <tr>
                 <th className="py-3 px-4">Queue #</th>
@@ -163,30 +164,44 @@ export default function AdminAppointments() {
                   </td>
                   <td className="py-3 px-4 text-center">
                     <div className="flex items-center justify-center gap-2">
-                       {appt.status !== 'cancelled' && appt.status !== 'completed' && (
-                         <button
-                           onClick={() => handleCancelAppointment(appt)}
-                           disabled={processing === appt._id}
-                           className="text-xs font-medium text-amber-600 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 flex items-center justify-center px-2 py-1.5 rounded-lg transition-colors"
-                           title="Gracefully Cancel"
-                         >
-                           Cancel
-                         </button>
-                       )}
-                       <button
-                         onClick={() => handleDeleteAppointment(appt)}
-                         disabled={processing === appt._id}
-                         className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-                         title="Hard Delete"
-                       >
-                         <FiTrash2 size={16} />
-                       </button>
+                      {(() => {
+                        const isPaid = ['paid', 'with_doctor', 'completed'].includes(appt.status);
+                        return (
+                          <>
+                            {appt.status !== 'cancelled' && appt.status !== 'completed' && (
+                              <button
+                                onClick={() => !isPaid && handleCancelAppointment(appt)}
+                                disabled={processing === appt._id || isPaid}
+                                title={isPaid ? 'Cannot cancel a paid appointment' : 'Gracefully Cancel'}
+                                className={`text-xs font-medium flex items-center justify-center px-2 py-1.5 rounded-lg transition-colors
+                                  ${isPaid
+                                    ? 'text-gray-400 bg-gray-100 cursor-not-allowed opacity-60'
+                                    : 'text-amber-600 hover:text-amber-800 bg-amber-50 hover:bg-amber-100'}`}
+                              >
+                                Cancel
+                              </button>
+                            )}
+                            <button
+                              onClick={() => !isPaid && handleDeleteAppointment(appt)}
+                              disabled={processing === appt._id || isPaid}
+                              title={isPaid ? 'Cannot delete a paid appointment' : 'Hard Delete'}
+                              className={`p-1.5 rounded-lg transition-colors
+                                ${isPaid
+                                  ? 'text-gray-300 cursor-not-allowed opacity-60'
+                                  : 'text-red-500 hover:text-red-700 hover:bg-red-50'}`}
+                            >
+                              <FiTrash2 size={16} />
+                            </button>
+                          </>
+                        );
+                      })()}
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

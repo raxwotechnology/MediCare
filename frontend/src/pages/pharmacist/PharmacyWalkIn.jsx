@@ -31,89 +31,141 @@ const getLogoBase64 = async () => {
   } catch { return null; }
 };
 
+const BILL_STYLES = `
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Times New Roman', Times, serif; color: #000; background: #fff; font-size: 11.5pt; }
+#bill-root { width: 210mm; min-height: 297mm; padding: 6.35mm; margin: 0 auto; }
+.header { text-align: center; border-top: 3px solid #000; border-bottom: 3px solid #000; padding: 12px 0; margin-bottom: 14px; }
+.logo { height: 56px; object-fit: contain; display: block; margin: 0 auto 8px; }
+.clinic-name { font-size: 16pt; font-weight: 700; letter-spacing: .04em; }
+.clinic-sub { font-size: 8.5pt; color: #444; line-height: 1.7; font-family: Arial, sans-serif; }
+.bill-label { font-size: 12pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin: 9px 0 2px; font-family: Arial, sans-serif; }
+.bill-ref { font-size: 8.5pt; color: #555; font-family: Arial, sans-serif; }
+.meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; border-bottom: 1px solid #ccc; padding-bottom: 12px; }
+.meta-label { font-size: 7pt; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #555; font-family: Arial, sans-serif; margin-bottom: 2px; }
+.meta-value { font-size: 10pt; font-weight: 700; font-family: Arial, sans-serif; }
+.meta-sub { font-size: 8.5pt; color: #555; font-family: Arial, sans-serif; }
+.badge { display: inline-block; padding: 2px 9px; border-radius: 2px; font-size: 8pt; font-weight: 700; font-family: Arial, sans-serif; border: 1.5px solid #000; }
+.paid-b { background: #000; color: #fff; } .unpaid-b { background: #fff; color: #000; }
+.walkin-tag { display: inline-block; border: 1px solid #000; padding: 1px 7px; font-size: 7.5pt; font-family: Arial, sans-serif; margin-top: 4px; text-transform: uppercase; letter-spacing: .05em; }
+table.meds { width: 100%; border-collapse: collapse; }
+table.meds thead th { background: #000; color: #fff; padding: 6px 9px; text-align: left; font-size: 8.5pt; font-family: Arial, sans-serif; text-transform: uppercase; letter-spacing: .04em; }
+.th-c { text-align: center !important; } .th-r { text-align: right !important; }
+table.meds tbody td { padding: 7px 9px; border-bottom: 1px solid #ddd; font-family: Arial, sans-serif; font-size: 10pt; }
+.td-c { text-align: center; } .td-r { text-align: right; font-family: 'Courier New', monospace; }
+.tfoot-total td { padding: 8px 9px; border-top: 2px solid #000; font-family: Arial, sans-serif; font-size: 10pt; font-weight: 700; text-align: right; }
+.tfoot-total .td-mono { font-family: 'Courier New', monospace; font-size: 12pt; }
+.tfoot-sub td { padding: 5px 9px; font-family: Arial, sans-serif; font-size: 9.5pt; text-align: right; }
+.tfoot-change td { padding: 5px 9px; font-family: Arial, sans-serif; font-size: 9.5pt; font-weight: 700; text-align: right; }
+.pay-box { margin-top: 12px; padding: 9px 12px; border: 1.5px solid #ccc; }
+.pay-title { font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #555; font-family: Arial, sans-serif; margin-bottom: 5px; }
+.pay-tbl { width: 100%; font-size: 9.5pt; font-family: Arial, sans-serif; }
+.pm { padding: 3px 7px; } .pa { padding: 3px 7px; text-align: right; font-family: 'Courier New', monospace; font-weight: 700; }
+.notes-box { margin-top: 10px; padding: 8px 12px; border: 1px solid #ddd; font-family: Arial, sans-serif; font-size: 9.5pt; }
+.footer { margin-top: 20px; text-align: center; font-size: 7.5pt; color: #777; border-top: 1px solid #ccc; padding-top: 9px; font-family: Arial, sans-serif; line-height: 1.6; }
+@media print {
+  body { margin: 0; }
+  #bill-root { padding: 6.35mm; width: 210mm; min-height: 297mm; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  table.meds thead th { background: #000 !important; color: #fff !important; }
+  .paid-b { background: #000 !important; color: #fff !important; }
+  #pdf-btn { display: none !important; }
+}
+@page { size: A4; margin: 0; }
+`;
+
 /* ── Build bill HTML ── */
-const buildBillHtml = (bill, logoSrc) => {
-  const logoHtml = logoSrc
-    ? `<img src="${logoSrc}" alt="${CLINIC.name}" style="height:64px;object-fit:contain;display:block;margin:0 auto 8px;" />`
-    : '';
+const buildBillHtml = (bill, logoSrc, mode = 'print') => {
+  const logoHtml = logoSrc ? `<img src="${logoSrc}" alt="${CLINIC.name}" class="logo" />` : '';
+
   const rows = bill.medicines.map(m => `
     <tr>
-      <td style="padding:7px 8px;border-bottom:1px solid #f0f0f0">${m.name}</td>
-      <td style="padding:7px 8px;border-bottom:1px solid #f0f0f0;text-align:center">${m.quantity}</td>
-      <td style="padding:7px 8px;border-bottom:1px solid #f0f0f0;text-align:right">LKR ${Number(m.price).toFixed(2)}</td>
-      <td style="padding:7px 8px;border-bottom:1px solid #f0f0f0;text-align:right">LKR ${(m.price * m.quantity).toFixed(2)}</td>
+      <td>${m.name}</td>
+      <td class="td-c">${m.quantity}</td>
+      <td class="td-r">LKR ${Number(m.price).toFixed(2)}</td>
+      <td class="td-r">LKR ${(m.price * m.quantity).toFixed(2)}</td>
     </tr>`).join('');
 
-  // Show payment breakdown if multiple methods were used
   const splits = bill.paymentSplits || [];
-  let paymentDetail = '';
+  let payRows = '';
   if (bill.isPaid) {
     if (splits.length > 1) {
-      paymentDetail = splits.map(s =>
-        `<div style="color:#6b7280;font-size:12px;text-transform:capitalize">${s.method}: LKR ${Number(s.amount).toFixed(2)}</div>`
+      payRows = splits.map(s =>
+        `<tr><td class="pm" style="text-transform:capitalize">${s.method}</td><td class="pa">LKR ${Number(s.amount).toFixed(2)}</td></tr>`
       ).join('');
-    } else {
-      paymentDetail = `<div style="color:#6b7280;margin-top:4px;font-size:12px;text-transform:capitalize">${bill.paymentMethod}</div>`;
-    }
-    if (Number(bill.changeGiven) > 0) {
-      const tendered = Number(bill.totalTendered || bill.cashTendered || 0);
-      paymentDetail += `<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #d1d5db;color:#374151;font-size:12px">
-        <div>Tendered: <strong>LKR ${tendered.toFixed(2)}</strong></div>
-        <div style="color:#047857">Change: <strong>LKR ${Number(bill.changeGiven).toFixed(2)}</strong></div>
-      </div>`;
+    } else if (bill.paymentMethod) {
+      payRows = `<tr><td class="pm" style="text-transform:capitalize">${bill.paymentMethod}</td><td class="pa">LKR ${Number(bill.totalAmount).toFixed(2)}</td></tr>`;
     }
   }
+  const payBlock = payRows ? `<div class="pay-box"><div class="pay-title">Payment Breakdown</div><table class="pay-tbl">${payRows}</table></div>` : '';
 
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Walk-In Bill #WI-${String(bill.billNumber).padStart(4,'0')}</title>
-  <style>
-    body{font-family:'Segoe UI',sans-serif;margin:0;padding:24px;color:#1a1a1a;font-size:13px}
-    .header{text-align:center;border-bottom:2px solid #059669;padding-bottom:14px;margin-bottom:16px}
-    .clinic-name{font-size:22px;font-weight:800;color:#059669;margin-bottom:2px}
-    .clinic-sub{font-size:12px;color:#4b5563;line-height:1.6}
-    .meta{display:flex;justify-content:space-between;margin-bottom:14px;gap:16px}
-    .meta-box{flex:1;background:#f0fdf4;padding:10px 12px;border-radius:8px}
-    .meta-label{font-size:10px;text-transform:uppercase;color:#6b7280;font-weight:600}
-    .meta-value{font-weight:700;margin-top:2px}
-    table{width:100%;border-collapse:collapse}
-    thead{background:#059669;color:#fff}
-    thead th{padding:8px;text-align:left;font-size:12px}
-    .total-row{background:#ecfdf5;font-weight:800}
-    .total-row td{padding:10px 8px;font-size:15px}
-    .status{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
-    .paid{background:#d1fae5;color:#065f46} .unpaid{background:#fef3c7;color:#92400e}
-    .walkin-badge{display:inline-block;background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;margin-top:6px}
-    .footer{margin-top:20px;text-align:center;color:#9ca3af;font-size:11px;border-top:1px solid #e5e7eb;padding-top:10px}
-    @media print{body{padding:10px}}
-  </style></head><body>
+  const changeGiven = Number(bill.changeGiven || 0);
+  const tendered = Number(bill.totalTendered || bill.cashTendered || 0);
+  const changeRows = bill.isPaid && changeGiven > 0 ? `
+    <tr class="tfoot-sub"><td colspan="3">Cash Paid</td><td style="font-family:'Courier New',monospace">LKR ${tendered.toFixed(2)}</td></tr>
+    <tr class="tfoot-change"><td colspan="3">Change Returned</td><td style="font-family:'Courier New',monospace">LKR ${changeGiven.toFixed(2)}</td></tr>` : '';
+
+  const billNo = `WI-${String(bill.billNumber).padStart(4, '0')}`;
+  const safeName = (bill.customerName || 'customer').replace(/\s+/g, '-');
+
+  const pdfScript = mode === 'download' ? `
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"><\/script>
+    <script>
+      function generatePDF() {
+        var btn = document.getElementById('pdf-btn');
+        if (btn) btn.style.display = 'none';
+        html2pdf().set({
+          margin: 0,
+          filename: 'walkin-bill-${safeName}-${billNo}.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        }).from(document.getElementById('bill-root')).save().then(function(){
+          if (btn) btn.style.display = '';
+        });
+      }
+      window.addEventListener('load', function(){ setTimeout(generatePDF, 700); });
+    <\/script>` : '';
+
+  const pdfBtn = mode === 'download'
+    ? `<div style="text-align:center;margin:16px 0 4px"><button id="pdf-btn" onclick="generatePDF()" style="background:#000;color:#fff;border:none;padding:10px 28px;font-size:13px;font-weight:700;letter-spacing:.05em;border-radius:3px;cursor:pointer;font-family:Arial,sans-serif;">⬇ Download PDF</button></div>`
+    : '';
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Walk-In Bill ${billNo}</title>
+  <style>${BILL_STYLES}</style>${pdfScript}</head><body>
+<div id="bill-root">
   <div class="header">
     ${logoHtml}
     <div class="clinic-name">${CLINIC.name}</div>
     <div class="clinic-sub">${CLINIC.address}</div>
     <div class="clinic-sub">Tel: ${CLINIC.phone} &nbsp;|&nbsp; ${CLINIC.email}</div>
-    <div style="font-size:15px;font-weight:700;margin:10px 0 2px">Walk-In Pharmacy Bill — #WI-${String(bill.billNumber).padStart(4,'0')}</div>
-    <div style="font-size:12px;color:#6b7280">${new Date(bill.createdAt).toLocaleString()}</div>
+    <div class="bill-label">Walk-In Pharmacy Bill</div>
+    <div class="bill-ref">${billNo} &bull; ${new Date(bill.createdAt).toLocaleString()}</div>
   </div>
   <div class="meta">
-    <div class="meta-box"><div class="meta-label">Customer</div><div class="meta-value">${bill.customerName}</div>${bill.customerPhone ? `<div style="color:#6b7280;font-size:12px">${bill.customerPhone}</div>` : ''}<div class="walkin-badge">Walk-In (No Prescription)</div></div>
-    <div class="meta-box"><div class="meta-label">Payment</div>
-      <div class="meta-value"><span class="status ${bill.isPaid ? 'paid' : 'unpaid'}">${bill.isPaid ? '✓ Paid' : 'Pending'}</span></div>
-      ${paymentDetail}
+    <div>
+      <div class="meta-label">Customer</div>
+      <div class="meta-value">${bill.customerName}</div>
+      ${bill.customerPhone ? `<div class="meta-sub">${bill.customerPhone}</div>` : ''}
+    </div>
+    <div>
+      <div class="meta-label">Payment Status</div>
+      <div class="meta-value" style="margin-top:4px"><span class="badge ${bill.isPaid ? 'paid-b' : 'unpaid-b'}">${bill.isPaid ? '✓ Paid' : 'Pending'}</span></div>
     </div>
   </div>
-  <table><thead><tr><th>Medicine</th><th style="text-align:center">Qty</th><th style="text-align:right">Unit Price</th><th style="text-align:right">Total</th></tr></thead>
+  <table class="meds">
+    <thead><tr><th>Medicine / Item</th><th class="th-c">Qty</th><th class="th-r">Unit Price</th><th class="th-r">Total</th></tr></thead>
     <tbody>${rows}</tbody>
-    <tfoot><tr class="total-row"><td colspan="3" style="padding:10px 8px;text-align:right">Grand Total</td>
-      <td style="padding:10px 8px;text-align:right;color:#059669">LKR ${Number(bill.totalAmount).toFixed(2)}</td></tr>
-      ${bill.isPaid && Number(bill.changeGiven) > 0 ? `
-      <tr><td colspan="3" style="padding:6px 8px;text-align:right;color:#374151">Tendered</td>
-        <td style="padding:6px 8px;text-align:right;color:#374151">LKR ${Number(bill.totalTendered || bill.cashTendered || 0).toFixed(2)}</td></tr>
-      <tr><td colspan="3" style="padding:6px 8px;text-align:right;font-weight:700;color:#047857">Change Returned</td>
-        <td style="padding:6px 8px;text-align:right;font-weight:700;color:#047857">LKR ${Number(bill.changeGiven).toFixed(2)}</td></tr>
-      ` : ''}
+    <tfoot>
+      <tr class="tfoot-total"><td colspan="3">Grand Total</td><td class="td-mono">LKR ${Number(bill.totalAmount).toFixed(2)}</td></tr>
+      ${changeRows}
     </tfoot>
   </table>
-  ${bill.notes ? `<div style="margin-top:12px;padding:10px;background:#f0fdf4;border-radius:6px;font-size:12px"><strong>Notes:</strong> ${bill.notes}</div>` : ''}
-  <div class="footer">${CLINIC.name} &bull; Walk-In Pharmacy &bull; No Prescription Required &bull; Computer-generated</div>
+  ${payBlock}
+  ${bill.notes ? `<div class="notes-box"><strong>Notes:</strong> ${bill.notes}</div>` : ''}
+  <div class="footer">${CLINIC.name} &bull; Walk-In Pharmacy &bull; No Prescription Required<br>Computer-generated bill &bull; No signature required</div>
+  ${pdfBtn}
+</div>
 </body></html>`;
 };
 
@@ -133,7 +185,7 @@ function SCard({ icon: Icon, label, value, color }) {
 }
 
 const EMPTY_FORM = { customerName: '', customerPhone: '', notes: '' };
-const EMPTY_MED  = { name: '', price: '', quantity: 1 };
+const EMPTY_MED = { name: '', price: '', quantity: 1 };
 
 export default function PharmacyWalkIn() {
   const [bills, setBills] = useState([]);
@@ -220,7 +272,7 @@ export default function PharmacyWalkIn() {
     if (!showPay) return;
     const sum = paySplits.reduce((s, x) => s + (parseFloat(x.amount) || 0), 0);
     if (sum < showPay.totalAmount - 0.01) {
-      return toast.error(`Tendered total (LKR ${sum.toFixed(2)}) is less than bill (LKR ${Number(showPay.totalAmount).toFixed(2)})`);
+      return toast.error(`Paid total (LKR ${sum.toFixed(2)}) is less than bill (LKR ${Number(showPay.totalAmount).toFixed(2)})`);
     }
     setPaying(true);
     try {
@@ -228,8 +280,8 @@ export default function PharmacyWalkIn() {
         splits: paySplits,
       });
       toast.success(payChange > 0
-        ? `Bill #WI-${String(showPay.billNumber).padStart(4,'0')} paid — change LKR ${payChange.toFixed(2)}`
-        : `Bill #WI-${String(showPay.billNumber).padStart(4,'0')} paid ✓`);
+        ? `Bill #WI-${String(showPay.billNumber).padStart(4, '0')} paid — change LKR ${payChange.toFixed(2)}`
+        : `Bill #WI-${String(showPay.billNumber).padStart(4, '0')} paid ✓`);
       setShowPay(null);
       fetchAll();
     } catch (err) {
@@ -249,21 +301,17 @@ export default function PharmacyWalkIn() {
   const handlePrint = async (b) => {
     const logo = await getLogoBase64();
     const win = window.open('', '_blank', 'width=700,height=900');
-    win.document.write(buildBillHtml(b, logo));
+    win.document.write(buildBillHtml(b, logo, 'print'));
     win.document.close();
     setTimeout(() => win.print(), 400);
   };
 
   const handleDownload = async (b) => {
     const logo = await getLogoBase64();
-    const blob = new Blob([buildBillHtml(b, logo)], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `walkin-bill-${b.customerName.replace(/\s+/g, '-')}-WI${b.billNumber}.html`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success('Bill downloaded!');
+    const win = window.open('', '_blank', 'width=700,height=900');
+    win.document.write(buildBillHtml(b, logo, 'download'));
+    win.document.close();
+    toast.success('PDF download starting...');
   };
 
   const clearFilters = () => { setSearch(''); setFilterFrom(''); setFilterTo(''); setFilterPaid(''); };
@@ -287,7 +335,7 @@ export default function PharmacyWalkIn() {
       {summary && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <SCard icon={FiShoppingCart} label="Total Bills" value={summary.total} color="border-emerald-500 text-emerald-600" />
-          <SCard icon={FiDollarSign} label="Revenue" value={`LKR ${Number(summary.totalRevenue||0).toLocaleString()}`} color="border-teal-500 text-teal-600" />
+          <SCard icon={FiDollarSign} label="Revenue" value={`LKR ${Number(summary.totalRevenue || 0).toLocaleString()}`} color="border-teal-500 text-teal-600" />
           <SCard icon={FiCheck} label="Paid" value={summary.paid} color="border-primary-500 text-primary-600" />
           <SCard icon={FiBarChart2} label="Pending" value={summary.pending} color="border-amber-500 text-amber-600" />
         </div>
@@ -297,9 +345,9 @@ export default function PharmacyWalkIn() {
       <div className="card space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
-            {[{ key:'all', label:`All (${bills.length})` }, { key:'unpaid', label:`Unpaid (${bills.filter(b=>!b.isPaid).length})` }].map(t => (
+            {[{ key: 'all', label: `All (${bills.length})` }, { key: 'unpaid', label: `Unpaid (${bills.filter(b => !b.isPaid).length})` }].map(t => (
               <button key={t.key} onClick={() => setTab(t.key)}
-                className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${tab===t.key ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
+                className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${tab === t.key ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
                 {t.label}
               </button>
             ))}
@@ -345,7 +393,7 @@ export default function PharmacyWalkIn() {
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="font-semibold text-gray-900">{b.customerName}</p>
-                      <span className="text-xs font-mono text-gray-400">WI-{String(b.billNumber).padStart(4,'0')}</span>
+                      <span className="text-xs font-mono text-gray-400">WI-{String(b.billNumber).padStart(4, '0')}</span>
                     </div>
                     <p className="text-sm text-gray-500">
                       {b.customerPhone && <span>{b.customerPhone} &bull; </span>}
@@ -357,13 +405,13 @@ export default function PharmacyWalkIn() {
                   <span className="text-xl font-display font-bold text-gray-900">LKR {Number(b.totalAmount).toFixed(2)}</span>
                   {b.isPaid
                     ? <span className="badge badge-green flex items-center gap-1">
-                        <FiCheck size={11} />Paid · {formatSplits(b.paymentSplits, b.paymentMethod)}
-                        {Number(b.changeGiven) > 0 && (
-                          <span className="ml-1 px-1.5 py-0.5 rounded bg-emerald-200 text-emerald-900 text-[10px] font-bold">
-                            Change LKR {Number(b.changeGiven).toFixed(2)}
-                          </span>
-                        )}
-                      </span>
+                      <FiCheck size={11} />Paid · {formatSplits(b.paymentSplits, b.paymentMethod)}
+                      {Number(b.changeGiven) > 0 && (
+                        <span className="ml-1 px-1.5 py-0.5 rounded bg-emerald-200 text-emerald-900 text-[10px] font-bold">
+                          Change LKR {Number(b.changeGiven).toFixed(2)}
+                        </span>
+                      )}
+                    </span>
                     : <span className="badge badge-yellow">Unpaid</span>}
                 </div>
               </div>
@@ -442,14 +490,15 @@ export default function PharmacyWalkIn() {
                   </button>
                 </div>
                 <div className="space-y-2">
-                  <div className="grid grid-cols-12 gap-2 text-xs font-semibold text-gray-400 px-1">
+                  <div className="hidden sm:grid grid-cols-12 gap-2 text-xs font-semibold text-gray-400 px-1">
                     <span className="col-span-5">Medicine Name</span>
                     <span className="col-span-3">Price (LKR)</span>
                     <span className="col-span-3">Qty</span>
                   </div>
                   {meds.map((m, i) => (
-                    <div key={i} className="grid grid-cols-12 gap-2 items-start">
-                      <div className="col-span-5">
+                    <div key={i} className="flex flex-col sm:grid sm:grid-cols-12 gap-2 items-start p-2 sm:p-0 bg-gray-50 sm:bg-transparent rounded-lg sm:rounded-none">
+                      <div className="w-full sm:col-span-5">
+                        <label className="block sm:hidden text-xs text-gray-500 mb-1">Medicine Name</label>
                         <CreatableSelect
                           options={medSuggestions.map(n => ({ value: n, label: n }))}
                           value={m.name}
@@ -458,14 +507,22 @@ export default function PharmacyWalkIn() {
                           createLabel="Add"
                         />
                       </div>
-                      <input type="number" min="0" step="0.01" placeholder="0.00" value={m.price} onChange={e => updateMed(i, 'price', e.target.value)}
-                        className="input-field col-span-3 text-sm" />
-                      <input type="number" min="1" value={m.quantity} onChange={e => updateMed(i, 'quantity', e.target.value)}
-                        className="input-field col-span-3 text-sm" />
-                      <button type="button" onClick={() => removeRow(i)} disabled={meds.length === 1}
-                        className="col-span-1 text-red-400 hover:text-red-600 disabled:opacity-30 p-1 text-center mt-1">
-                        <FiTrash2 size={14} />
-                      </button>
+                      <div className="flex gap-2 w-full sm:contents">
+                        <div className="flex-1 sm:contents">
+                          <label className="block sm:hidden text-xs text-gray-500 mb-1">Price (LKR)</label>
+                          <input type="number" min="0" step="0.01" placeholder="0.00" value={m.price} onChange={e => updateMed(i, 'price', e.target.value)}
+                            className="input-field sm:col-span-3 text-sm w-full" />
+                        </div>
+                        <div className="flex-1 sm:contents">
+                          <label className="block sm:hidden text-xs text-gray-500 mb-1">Qty</label>
+                          <input type="number" min="1" value={m.quantity} onChange={e => updateMed(i, 'quantity', e.target.value)}
+                            className="input-field sm:col-span-3 text-sm w-full" />
+                        </div>
+                        <button type="button" onClick={() => removeRow(i)} disabled={meds.length === 1}
+                          className="sm:col-span-1 text-red-400 hover:text-red-600 disabled:opacity-30 p-1 text-center mt-1 self-end">
+                          <FiTrash2 size={14} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -507,7 +564,7 @@ export default function PharmacyWalkIn() {
               <div className="bg-gray-50 rounded-xl p-4 text-center">
                 <p className="text-sm text-gray-500">Customer</p>
                 <p className="font-bold text-gray-900 text-lg">{showPay.customerName}</p>
-                <p className="text-xs text-gray-400 mt-1">Bill #WI-{String(showPay.billNumber).padStart(4,'0')} &bull; {showPay.medicines.length} item(s)</p>
+                <p className="text-xs text-gray-400 mt-1">Bill #WI-{String(showPay.billNumber).padStart(4, '0')} &bull; {showPay.medicines.length} item(s)</p>
                 <p className="text-3xl font-display font-bold text-emerald-600 mt-2">LKR {Number(showPay.totalAmount).toFixed(2)}</p>
               </div>
 

@@ -5,6 +5,7 @@ import {
   getQueueNumber, lookupPatient, acceptPatient, completePatient,
   cancelAppointment, deleteAppointment, getActiveDates, getActiveDatesPublic,
   addExtraCharge, payExtraCharge, deleteExtraCharge, recordInvoicePrint,
+  checkAppointment,
 } from '../controllers/appointmentController.js';
 import { protect, authorize } from '../middleware/auth.js';
 import { logAction } from '../middleware/audit.js';
@@ -17,6 +18,8 @@ router.get('/queue', getQueueNumber);
 router.get('/lookup-patient', lookupPatient);
 // Public — for highlighting booked dates on the public booking calendar
 router.get('/active-dates-public', getActiveDatesPublic);
+// Public — patient self-lookup: ?phone=&date=&doctorId=
+router.get('/check', checkAppointment);
 
 router.use(protect);
 router.get('/active-dates', getActiveDates);

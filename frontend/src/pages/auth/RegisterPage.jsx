@@ -52,11 +52,11 @@ export default function RegisterPage() {
           <p className="text-primary-200 mt-1">Join MediClinic</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
+        <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
           {/* Role selection */}
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-2">Register as</label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {ROLES.map(r => (
                 <button key={r.value} type="button"
                   onClick={() => setRole(r.value)}

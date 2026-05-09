@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import {
   FiHome, FiUsers, FiUser, FiCalendar, FiDollarSign,
   FiFileText, FiActivity, FiList, FiLogOut, FiMenu, FiX,
-  FiPackage, FiShield, FiBarChart2, FiBriefcase, FiPlusCircle, FiShoppingCart
+  FiPackage, FiShield, FiBarChart2, FiBriefcase, FiPlusCircle, FiShoppingCart, FiSearch
 } from 'react-icons/fi';
 
 const navByRole = {
@@ -28,7 +28,9 @@ const navByRole = {
     { to: '/admin/insurance-reports', label: 'Insurance Reports', icon: FiActivity },
     { to: '/admin/walkin-bills', label: 'Walk-In Bills', icon: FiShoppingCart },
     { to: '/admin/cashier-reports', label: 'Cashier Reports', icon: FiDollarSign },
+    { to: '/admin/patient-records', label: 'Patient Records', icon: FiUsers },
     { to: '/admin/audit', label: 'Audit Logs', icon: FiShield },
+    { to: '/admin/audit-detail', label: 'Audit Inspector', icon: FiSearch },
   ],
   doctor: [
     { to: '/doctor', label: 'Dashboard', icon: FiHome, end: true },
@@ -167,7 +169,7 @@ export default function DashboardLayout() {
       {/* Main content wrapper */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Unified Top Header */}
-        <header className="flex items-center gap-4 px-6 py-4 bg-white border-b border-gray-200 z-40 sticky top-0">
+        <header className="flex items-center gap-4 px-4 md:px-6 py-4 bg-white border-b border-gray-200 z-40 sticky top-0">
           <button
             onClick={() => setSidebarOpen(true)}
             className="p-2.5 -ml-2 rounded-xl text-gray-500 hover:text-primary-600 hover:bg-primary-50 transition-all duration-300 shadow-sm border border-transparent hover:border-primary-100"
@@ -199,7 +201,7 @@ export default function DashboardLayout() {
 
         {/* Dynamic Page content */}
         <main className="flex-1 overflow-y-auto bg-gray-50/30">
-          <div className="max-w-[1600px] mx-auto p-6 md:p-10">
+          <div className="max-w-[1600px] mx-auto p-4 md:p-6 lg:p-10">
             <Outlet />
           </div>
         </main>
