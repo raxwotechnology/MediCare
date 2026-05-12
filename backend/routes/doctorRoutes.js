@@ -1,6 +1,6 @@
 import express from 'express';
 import {
-  createDoctor, getDoctors, getDoctorById, updateDoctor,
+  createDoctor, getDoctors, getDoctorsLean, getDoctorById, updateDoctor,
   addServiceToDoctor, removeServiceFromDoctor, updateServiceInDoctor, getMyDoctorProfile, getDoctorStats,
   updateAvailability
 } from '../controllers/doctorController.js';
@@ -8,7 +8,8 @@ import { protect, authorize } from '../middleware/auth.js';
 import { logAction } from '../middleware/audit.js';
 const router = express.Router();
 
-router.get('/public', getDoctors); // public for appointment booking
+router.get('/public', getDoctors); // public for appointment booking (full data)
+router.get('/public/lean', getDoctorsLean); // lean version for booking page speed
 router.use(protect);
 router.get('/my-profile', authorize('doctor'), getMyDoctorProfile);
 router.get('/my-stats', authorize('doctor'), getDoctorStats);

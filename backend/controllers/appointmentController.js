@@ -107,6 +107,7 @@ export const createAppointment = async (req, res) => {
       patientUser: patientUser?._id || null,
       doctor: doctorId,
       doctorName: doctor.name,
+      doctorDesignation: doctor.designation || 'Dr.',
       service: serviceId,
       serviceName: svc.service?.name || 'Medical Service',
       price: svc.price,
@@ -196,7 +197,7 @@ export const getAppointments = async (req, res) => {
     }
 
     const appointments = await Appointment.find(filter)
-      .populate('doctor', 'name specialization')
+      .populate('doctor', 'name specialization designation')
       .populate('service', 'name')
       .sort('queueNumber');
 
@@ -545,9 +546,9 @@ export const checkAppointment = async (req, res) => {
     if (doctorId) filter.doctor = doctorId;
 
     const appointments = await Appointment.find(filter)
-      .populate('doctor', 'name specialization availability')
+      .populate('doctor', 'name specialization availability designation')
       .populate('service', 'name')
-      .select('patientName queueNumber appointmentDate status doctor doctorName service serviceName price')
+      .select('patientName queueNumber appointmentDate status doctor doctorName doctorDesignation service serviceName price')
       .sort('queueNumber');
 
     if (!appointments.length) {

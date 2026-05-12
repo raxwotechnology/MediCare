@@ -4,12 +4,12 @@ import DoctorPayment from '../models/DoctorPayment.js';
 
 export const createDoctor = async (req, res) => {
   try {
-    const { phone, name, specialization, slmcNumber } = req.body;
+    const { phone, name, designation, specialization, slmcNumber } = req.body;
     if (phone) {
       const exists = await DoctorProfile.findOne({ phone });
       if (exists) return res.status(400).json({ message: 'Doctor with this phone already exists' });
     }
-    const doctor = await DoctorProfile.create({ phone: phone || undefined, name, specialization, slmcNumber });
+    const doctor = await DoctorProfile.create({ phone: phone || undefined, designation: designation || 'Dr.', name, specialization, slmcNumber });
     res.status(201).json(doctor);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -19,6 +19,19 @@ export const createDoctor = async (req, res) => {
 export const getDoctors = async (req, res) => {
   try {
     const doctors = await DoctorProfile.find().populate('services.service');
+    res.json(doctors);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Lean version for appointment booking — only fields needed for selection
+export const getDoctorsLean = async (req, res) => {
+  try {
+    const doctors = await DoctorProfile.find(
+      {},
+      'name designation specialization availability services'
+    ).populate('services.service', 'name');
     res.json(doctors);
   } catch (err) {
     res.status(500).json({ message: err.message });

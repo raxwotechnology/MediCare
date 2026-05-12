@@ -80,8 +80,9 @@ const appointmentSchema = new mongoose.Schema({
   patientPhone: { type: String, required: true },
   patientUser:  { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
 
-  doctor:      { type: mongoose.Schema.Types.ObjectId, ref: 'DoctorProfile', required: true },
-  doctorName:  { type: String },
+  doctor:            { type: mongoose.Schema.Types.ObjectId, ref: 'DoctorProfile', required: true },
+  doctorName:        { type: String },
+  doctorDesignation: { type: String },
   service:     { type: mongoose.Schema.Types.ObjectId, ref: 'Service', required: true },
   serviceName: { type: String },
   price:       { type: Number, required: true },

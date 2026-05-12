@@ -101,7 +101,7 @@ export const getFinancialSummary = async (req, res) => {
     if (dateFilter) apptFilter.appointmentDate = dateFilter;
 
     const appointments = await Appointment.find(apptFilter)
-      .populate('doctor', 'name')
+      .populate('doctor', 'name designation')
       .populate('service', 'name');
 
     // Filter by payment-method usage (splits OR legacy field)
@@ -241,7 +241,7 @@ export const downloadPDFReport = async (req, res) => {
     if (endDate) apptFilter.appointmentDate = { ...apptFilter.appointmentDate, $lte: endDate };
 
     const allAppts = await Appointment.find(apptFilter)
-      .populate('doctor', 'name')
+      .populate('doctor', 'name designation')
       .populate('service', 'name');
 
     const appointments = paymentMethod
@@ -257,7 +257,7 @@ export const downloadPDFReport = async (req, res) => {
         docPayFilter.paidAt.$lte = end;
       }
     }
-    const allDocPayments = await DoctorPayment.find(docPayFilter).populate('doctor', 'name');
+    const allDocPayments = await DoctorPayment.find(docPayFilter).populate('doctor', 'name designation');
     const docPayments = paymentMethod ? allDocPayments.filter(p => paymentUsesMethod(p, paymentMethod)) : allDocPayments;
 
     const salaryPayFilter = {};
@@ -406,7 +406,7 @@ export const downloadPDFReport = async (req, res) => {
       if (y > 730) { doc.addPage(); y = 50; }
       doc.text(String(a.appointmentDate || '-'), 50, y);
       doc.text(String(a.patientName || '-').substring(0, 18), 110, y);
-      doc.text(`Dr. ${a.doctor?.name || a.doctorName || '—'}`.substring(0, 16), 230, y);
+      doc.text(`${a.doctor?.designation || 'Dr.'} ${a.doctor?.name || a.doctorName || '—'}`.substring(0, 20), 230, y);
       doc.text(String(a.service?.name || a.serviceName || '—').substring(0, 18), 320, y);
       doc.text(`LKR ${a.price}`, 430, y);
       doc.text(formatSplitsAsString(a.receptionPayment).substring(0, 25), 480, y);
@@ -477,7 +477,7 @@ export const downloadPDFReport = async (req, res) => {
     doc.font('Helvetica').fontSize(8).fillColor('#111827');
     docPayments.forEach(p => {
       if (y > 730) { doc.addPage(); y = 50; }
-      doc.text(`Dr. ${p.doctor?.name || p.doctorName || '—'}`.substring(0, 25), 50, y);
+      doc.text(`${p.doctor?.designation || 'Dr.'} ${p.doctor?.name || p.doctorName || '—'}`.substring(0, 30), 50, y);
       doc.text(`LKR ${p.amount}`, 200, y);
       doc.text(String(p.status || '').toUpperCase(), 280, y);
       doc.text(formatSplitsAsString(p).substring(0, 25), 350, y);
@@ -575,7 +575,7 @@ export const downloadExcelReport = async (req, res) => {
     if (startDate) apptFilter.appointmentDate = { $gte: startDate };
     if (endDate) apptFilter.appointmentDate = { ...apptFilter.appointmentDate, $lte: endDate };
 
-    const allAppts = await Appointment.find(apptFilter).populate('doctor', 'name').populate('service', 'name');
+    const allAppts = await Appointment.find(apptFilter).populate('doctor', 'name designation').populate('service', 'name');
     const appointments = paymentMethod
       ? allAppts.filter(a => paymentUsesMethod(a.receptionPayment, paymentMethod))
       : allAppts;
@@ -589,7 +589,7 @@ export const downloadExcelReport = async (req, res) => {
         docPayFilter.paidAt.$lte = end;
       }
     }
-    const allDocPayments = await DoctorPayment.find(docPayFilter).populate('doctor', 'name');
+    const allDocPayments = await DoctorPayment.find(docPayFilter).populate('doctor', 'name designation');
     const docPayments = paymentMethod ? allDocPayments.filter(p => paymentUsesMethod(p, paymentMethod)) : allDocPayments;
 
     const salaryPayFilter = {};
@@ -791,7 +791,7 @@ export const downloadCustomReport = async (req, res) => {
     }
 
     const [appointments, doctors, employees, salaries, expenses, extraIncome, walkInBills] = await Promise.all([
-      Appointment.find(Object.keys(dateQuery).length ? { appointmentDate: dateQuery } : {}).populate('doctor', 'name').populate('service', 'name'),
+      Appointment.find(Object.keys(dateQuery).length ? { appointmentDate: dateQuery } : {}).populate('doctor', 'name designation').populate('service', 'name'),
       DoctorProfile.find().populate('services.service', 'name'),
       Employee.find().populate('user', 'name phone email'),
       SalaryPayment.find(createdAtQuery.createdAt ? { createdAt: createdAtQuery.createdAt } : {}),
@@ -1005,7 +1005,7 @@ export const downloadCategorizedPDF = async (req, res) => {
 
     switch (type) {
       case 'pharmacy': {
-        const apptsPharm = await Appointment.find({ appointmentDate: dateQuery }).populate('doctor', 'name');
+        const apptsPharm = await Appointment.find({ appointmentDate: dateQuery }).populate('doctor', 'name designation');
         doc.fontSize(10).font('Helvetica-Bold').text('Date', 50, y);
         doc.text('Bill #', 100, y); doc.text('Patient', 145, y);
         doc.text('Medicine', 250, y); doc.text('Qty', 380, y);
@@ -1053,7 +1053,7 @@ export const downloadCategorizedPDF = async (req, res) => {
       }
 
       case 'appointments': {
-        const apptsRec = await Appointment.find({ appointmentDate: dateQuery }).populate('doctor', 'name').populate('service', 'name');
+        const apptsRec = await Appointment.find({ appointmentDate: dateQuery }).populate('doctor', 'name designation').populate('service', 'name');
         doc.fontSize(10).font('Helvetica-Bold').text('Date', 45, y);
         doc.text('Patient', 100, y); doc.text('Doctor', 200, y);
         doc.text('Service', 300, y); doc.text('Amt', 410, y);
@@ -1194,7 +1194,7 @@ export const getServiceReport = async (req, res) => {
 
     const appointments = await Appointment.find(apptFilter)
       .populate('service', 'name')
-      .populate('doctor', 'name')
+      .populate('doctor', 'name designation')
       .populate('extraCharges.service', 'name')
       .lean();
 

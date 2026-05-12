@@ -296,7 +296,7 @@ export default function ReceptionistAppointments() {
         >
           <option value="all">All Doctors</option>
           {allDoctors.map(doc => (
-            <option key={doc._id} value={doc._id}>Dr. {doc.name}</option>
+            <option key={doc._id} value={doc._id}>{ doc.designation || 'Dr.'} {doc.name}</option>
           ))}
         </select>
       </div>
@@ -344,7 +344,7 @@ export default function ReceptionistAppointments() {
                         <p className="text-sm text-gray-500">{appt.patientPhone}</p>
                         {/* Doctor & Service */}
                         <p className="text-sm text-gray-600 mt-0.5 flex items-center gap-1 flex-wrap">
-                          <span className="font-medium text-primary-700">Dr. {appt.doctor?.name || appt.doctorName || 'Deleted'}</span>
+                          <span className="font-medium text-primary-700">{appt.doctor?.designation || appt.doctorDesignation || 'Dr.'} {appt.doctor?.name || appt.doctorName || 'Deleted'}</span>
                           <span className="text-gray-400">·</span>
                           <span>{appt.service?.name || appt.serviceName || 'Service'}</span>
                         </p>
@@ -488,7 +488,7 @@ export default function ReceptionistAppointments() {
               <p className="text-sm text-gray-500 mt-2">Amount Due</p>
               <p className="text-2xl font-display font-bold text-primary-600">LKR {Number(payingAppt.price).toFixed(2)}</p>
               <p className="text-xs text-gray-400 mt-1">
-                {payingAppt.service?.name || payingAppt.serviceName || 'Service'} • Dr. {payingAppt.doctor?.name || payingAppt.doctorName || 'Deleted'}
+                {payingAppt.service?.name || payingAppt.serviceName || 'Service'} • {(payingAppt.doctor?.designation || payingAppt.doctorDesignation || 'Dr.')} {payingAppt.doctor?.name || payingAppt.doctorName || 'Deleted'}
               </p>
             </div>
 
@@ -519,7 +519,7 @@ export default function ReceptionistAppointments() {
             <div className="bg-gray-50 rounded-xl p-3 text-sm">
               <span className="text-gray-500">For: </span>
               <span className="font-bold text-gray-900">{extraAppt.patientName}</span>
-              <span className="text-gray-500"> • Dr. {extraAppt.doctor?.name || extraAppt.doctorName}</span>
+              <span className="text-gray-500"> • {extraAppt.doctor?.designation || extraAppt.doctorDesignation || 'Dr.'} {extraAppt.doctor?.name || extraAppt.doctorName}</span>
             </div>
 
             {/* Service picker — doctor's assigned services only */}

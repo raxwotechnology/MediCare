@@ -110,7 +110,7 @@ export default function BookAppointmentPage() {
 
     // Validate: doctor has no schedule at all
     if (!selectedDoctor.availability || selectedDoctor.availability.length === 0) {
-      return toast.error(`Dr. ${selectedDoctor.name} has no schedule set. Please contact the clinic directly.`);
+      return toast.error(`${selectedDoctor.designation || 'Dr.'} ${selectedDoctor.name} has no schedule set. Please contact the clinic directly.`);
     }
 
     // Validate: doctor not available on the selected date
@@ -122,9 +122,9 @@ export default function BookAppointmentPage() {
     if (!hasAvailableSlot) {
       const dayName = DAYS[new Date(form.appointmentDate + 'T00:00:00').getDay()];
       if (selectedIsToday && slotsOnDay.length > 0) {
-        return toast.error(`Dr. ${selectedDoctor.name}'s slots for today have already passed. Please select a future date.`);
+        return toast.error(`${selectedDoctor.designation || 'Dr.'} ${selectedDoctor.name}'s slots for today have already passed. Please select a future date.`);
       }
-      return toast.error(`Dr. ${selectedDoctor.name} is not available on ${dayName}s. Please select a different date.`);
+      return toast.error(`${selectedDoctor.designation || 'Dr.'} ${selectedDoctor.name} is not available on ${dayName}s. Please select a different date.`);
     }
 
     setLoading(true);
@@ -198,10 +198,10 @@ export default function BookAppointmentPage() {
     if (!form.appointmentDate) return 'Please select an appointment date';
     if (hasAvailabilityDefined && availabilitySlots.length === 0) {
       const dayName = DAYS[new Date(form.appointmentDate + 'T00:00:00').getDay()];
-      return `Dr. ${selectedDoctor.name} is not available on ${dayName}s`;
+      return `${selectedDoctor.designation || 'Dr.'} ${selectedDoctor.name} is not available on ${dayName}s`;
     }
     if (hasAvailabilityDefined && isToday && availabilitySlots.length > 0 && futureSlotsToday.length === 0) {
-      return `Dr. ${selectedDoctor.name}'s slots for today have passed — please pick a future date`;
+      return `${selectedDoctor.designation || 'Dr.'} ${selectedDoctor.name}'s slots for today have passed — please pick a future date`;
     }
     if (!form.patientName.trim()) return 'Please enter the patient name';
     if (!form.patientPhone.trim()) return 'Please enter a contact number';
@@ -363,7 +363,7 @@ export default function BookAppointmentPage() {
                             {doc.name.charAt(0)}
                           </div>
                           <div>
-                            <p className="font-semibold">Dr. {doc.name}</p>
+                            <p className="font-semibold">{doc.designation || 'Dr.'} {doc.name}</p>
                             <p className="text-xs text-gray-500">{doc.specialization || 'General'}</p>
                           </div>
                         </div>
@@ -459,7 +459,7 @@ export default function BookAppointmentPage() {
                 {isAvailableOnDay ? (
                   <div>
                     <p className="font-semibold text-teal-800">
-                      Dr. {selectedDoctor.name} is available
+                      {selectedDoctor.designation || 'Dr.'} {selectedDoctor.name} is available
                     </p>
 
                     <div className="flex gap-2 flex-wrap mt-1">
@@ -536,7 +536,7 @@ export default function BookAppointmentPage() {
                 <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
                   <h3 className="font-display font-bold text-gray-900 text-lg">Available Services</h3>
                   <div className="text-xs font-semibold text-gray-500 bg-white px-3 py-1 rounded-full border border-gray-200">
-                    Dr. {selectedDoctor.name}
+                    {selectedDoctor.designation || 'Dr.'} {selectedDoctor.name}
                   </div>
                 </div>
                 <div className="p-6">
@@ -649,7 +649,7 @@ export default function BookAppointmentPage() {
                   <p className="text-[10px] font-bold text-primary-800 uppercase tracking-widest text-center border-b border-primary-100 pb-2">Booking Summary</p>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Doctor</span>
-                    <span className="font-bold text-gray-800">Dr. {selectedDoctor.name}</span>
+                    <span className="font-bold text-gray-800">{selectedDoctor.designation || 'Dr.'} {selectedDoctor.name}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Service</span>

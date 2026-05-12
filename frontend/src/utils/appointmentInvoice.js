@@ -92,7 +92,7 @@ export const buildAppointmentInvoiceHtml = (appt, logoSrc, mode = 'print') => {
   const lineItems = [];
   lineItems.push({
     label: appt.serviceName || appt.service?.name || 'Consultation',
-    sub: `Dr. ${appt.doctor?.name || appt.doctorName || ''}`,
+    sub: `${appt.doctor?.designation || 'Dr.'} ${appt.doctor?.name || appt.doctorName || ''}`,
     price: appt.price,
     paid: ['paid', 'with_doctor', 'completed'].includes(appt.status),
   });
@@ -169,7 +169,7 @@ export const buildAppointmentInvoiceHtml = (appt, logoSrc, mode = 'print') => {
   </div>
   <div class="meta">
     <div><div class="meta-label">Patient</div><div class="meta-value">${appt.patientName || ''}</div><div class="meta-sub">${appt.patientPhone || ''}</div></div>
-    <div><div class="meta-label">Doctor</div><div class="meta-value">Dr. ${appt.doctor?.name || appt.doctorName || ''}</div><div class="meta-sub">${appt.doctor?.specialization || ''}</div></div>
+    <div><div class="meta-label">Doctor</div><div class="meta-value">${appt.doctor?.designation || 'Dr.'} ${appt.doctor?.name || appt.doctorName || ''}</div><div class="meta-sub">${appt.doctor?.specialization || ''}</div></div>
     <div><div class="meta-label">Appointment</div><div class="meta-value">${appt.appointmentDate || ''}</div>${queueLine}</div>
   </div>
   <table class="items">

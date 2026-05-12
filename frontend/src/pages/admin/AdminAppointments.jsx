@@ -95,7 +95,7 @@ export default function AdminAppointments() {
             <select value={selectedDoctor} onChange={e => setSelectedDoctor(e.target.value)} className="input-field pl-9">
               <option value="">All Doctors</option>
               {doctors.map(d => (
-                <option key={d._id} value={d._id}>Dr. {d.name}</option>
+                <option key={d._id} value={d._id}>{d.designation || 'Dr.'} {d.name}</option>
               ))}
             </select>
           </div>
@@ -146,7 +146,7 @@ export default function AdminAppointments() {
                     <p className="text-xs text-gray-500">{appt.patientPhone}</p>
                   </td>
                   <td className="py-3 px-4">
-                    <p className="font-medium text-gray-800">Dr. {appt.doctor?.name || appt.doctorName || 'Deleted'}</p>
+                    <p className="font-medium text-gray-800">{appt.doctor?.designation || appt.doctorDesignation || 'Dr.'} {appt.doctor?.name || appt.doctorName || 'Deleted'}</p>
                     <p className="text-xs text-gray-500">{appt.service?.name || appt.serviceName || 'Service'}</p>
                   </td>
                   <td className="py-3 px-4 text-right font-bold text-primary-600">

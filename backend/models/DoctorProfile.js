@@ -13,6 +13,11 @@ const timeSlotSchema = new mongoose.Schema({
 const doctorProfileSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // null until doctor registers
   phone: { type: String, required: false, sparse: true },
+  designation: {
+    type: String,
+    enum: ['Dr.', 'Mr.', 'Ms.', 'Mrs.', 'Prof.', 'Rev.'],
+    default: 'Dr.'
+  },
   name: { type: String, required: true },
   specialization: { type: String },
   slmcNumber: { type: String },

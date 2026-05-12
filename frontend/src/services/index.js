@@ -20,6 +20,7 @@ export const userService = {
 export const doctorService = {
   getAll: () => api.get('/doctors'),
   getPublic: () => api.get('/doctors/public'),
+  getLean: () => api.get('/doctors/public/lean'), // fast version for booking page
   getById: (id) => api.get(`/doctors/${id}`),
   getMyProfile: () => api.get('/doctors/my-profile'),
   updateAvailability: (id, data) => api.put(`/doctors/${id}/availability`, data),

@@ -18,7 +18,7 @@ export default function ManageDoctors() {
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [expandedDoctor, setExpandedDoctor] = useState(null);
 
-  const [form, setForm] = useState({ name: '', phone: '', specialization: '', slmcNumber: '' });
+  const [form, setForm] = useState({ designation: 'Dr.', name: '', phone: '', specialization: '', slmcNumber: '' });
   const [activeTab, setActiveTab] = useState('Profile');
   const [saving, setSaving] = useState(false);
 
@@ -51,7 +51,7 @@ export default function ManageDoctors() {
 
   const openCreateModal = () => {
     setSelectedDoctor(null);
-    setForm({ name: '', phone: '', specialization: '', slmcNumber: '' });
+    setForm({ designation: 'Dr.', name: '', phone: '', specialization: '', slmcNumber: '' });
     setPendingServices([]);
     setPendingSlots([]);
     setNewSvcForm({ serviceId: '', price: '', doctorFee: '' });
@@ -62,7 +62,7 @@ export default function ManageDoctors() {
 
   const openEditModal = (doc) => {
     setSelectedDoctor(doc);
-    setForm({ name: doc.name, phone: doc.phone, specialization: doc.specialization || '', slmcNumber: doc.slmcNumber || '' });
+    setForm({ designation: doc.designation || 'Dr.', name: doc.name, phone: doc.phone, specialization: doc.specialization || '', slmcNumber: doc.slmcNumber || '' });
     setActiveTab('Profile');
     setShowModal(true);
   };
@@ -204,7 +204,7 @@ export default function ManageDoctors() {
                       {doc.name?.charAt(0)}
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">Dr. {doc.name}</p>
+                      <p className="font-semibold text-gray-900">{doc.designation || 'Dr.'} {doc.name}</p>
                       <p className="text-sm text-gray-500">{doc.phone} {doc.specialization && `• ${doc.specialization}`}</p>
                       {doc.slmcNumber && <p className="text-xs text-gray-400 font-mono">SLMC: {doc.slmcNumber}</p>}
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -333,7 +333,27 @@ export default function ManageDoctors() {
           {/* Profile Tab */}
           {(activeTab === 'Profile' || selectedDoctor) && (
             <div className="space-y-4">
-              {['name', 'phone', 'specialization', 'slmcNumber'].map(field => (
+              {/* Designation + Name row */}
+              <div className="flex gap-3">
+                <div className="w-32">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Designation *</label>
+                  <select
+                    value={form.designation}
+                    onChange={e => setForm({ ...form, designation: e.target.value })}
+                    className="input-field"
+                  >
+                    {['Dr.', 'Mr.', 'Ms.', 'Mrs.', 'Prof.', 'Rev.'].map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                  <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
+                    className="input-field" required />
+                </div>
+              </div>
+              {['phone', 'specialization', 'slmcNumber'].map(field => (
                 <div key={field}>
                   <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
                     {field === 'slmcNumber' ? 'SLMC Registration Number' : field}
@@ -484,7 +504,7 @@ export default function ManageDoctors() {
       </Modal>
 
       {/* ── Add/Edit Service Modal (existing doctors) ───────────────────── */}
-      <Modal isOpen={showServiceModal} onClose={() => setShowServiceModal(false)} title={isEditingService ? `Edit Service — Dr. ${expandedDoctor?.name}` : `Add Service — Dr. ${expandedDoctor?.name}`}>
+      <Modal isOpen={showServiceModal} onClose={() => setShowServiceModal(false)} title={isEditingService ? `Edit Service — ${expandedDoctor?.designation || 'Dr.'} ${expandedDoctor?.name}` : `Add Service — ${expandedDoctor?.designation || 'Dr.'} ${expandedDoctor?.name}`}>
         <form onSubmit={handleSaveService} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Service *</label>
@@ -521,7 +541,7 @@ export default function ManageDoctors() {
 
       {/* ── Availability Modal (existing doctors) ───────────────────────── */}
       <Modal isOpen={showAvailabilityModal} onClose={() => setShowAvailabilityModal(false)}
-        title={`Availability — Dr. ${availabilityDoctor?.name}`} size="lg">
+        title={`Availability — ${availabilityDoctor?.designation || 'Dr.'} ${availabilityDoctor?.name}`} size="lg">
         <div className="space-y-5">
           <div className="bg-gray-50 rounded-xl p-4">
             <p className="text-sm font-semibold text-gray-700 mb-3">Add Time Slot</p>

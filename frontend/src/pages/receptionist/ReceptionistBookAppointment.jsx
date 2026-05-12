@@ -82,7 +82,7 @@ export default function ReceptionistBookAppointment() {
 
   useEffect(() => {
     setDoctorsLoading(true);
-    doctorService.getPublic()
+    doctorService.getLean()
       .then(r => setDoctors(r.data))
       .catch(() => {})
       .finally(() => setDoctorsLoading(false));
@@ -128,7 +128,7 @@ export default function ReceptionistBookAppointment() {
 
     // Validate: doctor has no schedule at all (has left the clinic)
     if (!selectedDoctor.availability || selectedDoctor.availability.length === 0) {
-      return toast.error(`Dr. ${selectedDoctor.name} has no schedule set and may no longer be available. Please contact administration.`);
+      return toast.error(`${selectedDoctor.designation || 'Dr.'} ${selectedDoctor.name} has no schedule set and may no longer be available. Please contact administration.`);
     }
 
     // Validate: doctor not available on the selected date
@@ -139,7 +139,7 @@ export default function ReceptionistBookAppointment() {
 
     if (!hasAvailableSlot) {
       const dayName = DAYS[new Date(form.appointmentDate + 'T00:00:00').getDay()];
-      return toast.error(`Dr. ${selectedDoctor.name} is not available on ${dayName}s. Please select a different date.`);
+      return toast.error(`${selectedDoctor.designation || 'Dr.'} ${selectedDoctor.name} is not available on ${dayName}s. Please select a different date.`);
     }
 
     setLoading(true);
@@ -290,7 +290,7 @@ export default function ReceptionistBookAppointment() {
                         {doc.name.charAt(0)}
                       </div>
                       <div>
-                        <p className="font-semibold">Dr. {doc.name}</p>
+                        <p className="font-semibold">{doc.designation || 'Dr.'} {doc.name}</p>
                         <p className="text-xs text-gray-500">{doc.specialization || 'General'}</p>
                       </div>
                     </div>
@@ -384,7 +384,7 @@ export default function ReceptionistBookAppointment() {
               {isAvailableOnDay ? (
                 <div>
                   <p className="font-semibold text-teal-800">
-                    Dr. {selectedDoctor.name} is available
+                    {selectedDoctor.designation || 'Dr.'} {selectedDoctor.name} is available
                   </p>
 
                   <div className="flex gap-2 flex-wrap mt-1">
@@ -459,7 +459,7 @@ export default function ReceptionistBookAppointment() {
             <div className="card">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-display font-bold text-gray-900">Services</h3>
-                <span className="badge-blue">Dr. {selectedDoctor.name}</span>
+                <span className="badge-blue">{selectedDoctor.designation || 'Dr.'} {selectedDoctor.name}</span>
               </div>
               {selectedDoctor.services.length === 0
                 ? <p className="text-sm text-gray-400 text-center py-4">No services available</p>
@@ -496,7 +496,7 @@ export default function ReceptionistBookAppointment() {
               {selectedDoctor && activeDates.length > 0 && (
                 <p className="text-[11px] text-gray-500 mt-1">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary-500 align-middle mr-1" />
-                  Highlighted dates already have bookings for Dr. {selectedDoctor.name}
+                  Highlighted dates already have bookings for {selectedDoctor.designation || 'Dr.'} {selectedDoctor.name}
                 </p>
               )}
               {queueNo && selectedDoctor && (
@@ -558,7 +558,7 @@ export default function ReceptionistBookAppointment() {
               <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Doctor</span>
-                  <span className="font-semibold">Dr. {selectedDoctor.name}</span>
+                  <span className="font-semibold">{selectedDoctor.designation || 'Dr.'} {selectedDoctor.name}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Service</span>
@@ -592,12 +592,12 @@ export default function ReceptionistBookAppointment() {
 
             {selectedDoctor && selectedDoctor.availability?.length === 0 && (
               <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
-                ⚠️ Dr. {selectedDoctor.name} has no schedule set. They may no longer be available. Please contact administration.
+                ⚠️ {selectedDoctor.designation || 'Dr.'} {selectedDoctor.name} has no schedule set. They may no longer be available. Please contact administration.
               </div>
             )}
             {selectedDoctor && selectedDoctor.availability?.length > 0 && !isAvailableOnDay && (
               <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-700">
-                ⚠️ Dr. {selectedDoctor.name} is not available on this date. Please choose a different date.
+                ⚠️ {selectedDoctor.designation || 'Dr.'} {selectedDoctor.name} is not available on this date. Please choose a different date.
               </div>
             )}
             <button type="submit"

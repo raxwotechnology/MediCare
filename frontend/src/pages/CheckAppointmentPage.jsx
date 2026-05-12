@@ -130,7 +130,7 @@ export default function CheckAppointmentPage() {
 
   const selectDoctor = (doc) => {
     setForm(f => ({ ...f, doctorId: doc._id }));
-    setDoctorSearch(`Dr. ${doc.name}${doc.specialization ? ` — ${doc.specialization}` : ''}`);
+    setDoctorSearch(`${doc.designation || 'Dr.'} ${doc.name}${doc.specialization ? ` — ${doc.specialization}` : ''}`);
     setDoctorDropdownOpen(false);
   };
 
@@ -293,7 +293,7 @@ export default function CheckAppointmentPage() {
                               {doc.name.charAt(0)}
                             </span>
                             <span className="flex-1 min-w-0">
-                              <span className="block font-semibold text-sm text-gray-900 truncate">Dr. {doc.name}</span>
+                              <span className="block font-semibold text-sm text-gray-900 truncate">{doc.designation || 'Dr.'} {doc.name}</span>
                               {doc.specialization && (
                                 <span className="block text-xs text-gray-400 truncate">{doc.specialization}</span>
                               )}
@@ -435,7 +435,7 @@ export default function CheckAppointmentPage() {
                         <div>
                           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Doctor</p>
                           <p className="font-semibold text-gray-900">
-                            Dr. {doctorObj?.name || appt.doctorName || 'N/A'}
+                            {doctorObj?.designation || appt.doctorDesignation || 'Dr.'} {doctorObj?.name || appt.doctorName || 'N/A'}
                           </p>
                           {(doctorObj?.specialization) && (
                             <p className="text-xs text-gray-500">{doctorObj.specialization}</p>

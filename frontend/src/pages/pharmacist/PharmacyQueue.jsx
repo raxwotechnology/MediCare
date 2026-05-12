@@ -141,7 +141,7 @@ const buildBillHtml = (appt, bill, logoSrc, mode = 'print') => {
   </div>
   <div class="meta">
     <div><div class="meta-label">Patient</div><div class="meta-value">${appt.patientName}</div><div class="meta-sub">${appt.patientPhone || ''}</div></div>
-    <div><div class="meta-label">Doctor</div><div class="meta-value">Dr. ${appt.doctor?.name || ''}</div><div class="meta-sub">${appt.service?.name || ''}</div></div>
+    <div><div class="meta-label">Doctor</div><div class="meta-value">${appt.doctor?.designation || 'Dr.'} ${appt.doctor?.name || ''}</div><div class="meta-sub">${appt.service?.name || ''}</div></div>
     <div><div class="meta-label">Payment Status</div><div class="meta-value" style="margin-top:4px"><span class="badge ${bill.isPaid ? 'paid-b' : 'unpaid-b'}">${bill.isPaid ? '✓ Paid' : 'Pending'}</span></div></div>
   </div>
   <table class="meds">
@@ -332,7 +332,7 @@ export default function PharmacyQueue() {
                     </div>
                     <div>
                       <p className="font-semibold text-gray-900">{appt.patientName}</p>
-                      <p className="text-sm text-gray-500">{appt.patientPhone} &bull; Dr. {appt.doctor?.name} &bull; {appt.service?.name}</p>
+                      <p className="text-sm text-gray-500">{appt.patientPhone} &bull; {appt.doctor?.designation || 'Dr.'} {appt.doctor?.name} &bull; {appt.service?.name}</p>
                     </div>
                   </div>
                   <button onClick={() => openBill(appt)} className="btn-primary flex items-center gap-2 text-sm flex-shrink-0">
