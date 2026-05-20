@@ -258,8 +258,8 @@ export default function DailyCashierReport() {
     try {
       const res  = await appointmentService.getAll({ date });
       const list = Array.isArray(res.data) ? res.data : (res.data?.appointments || []);
-      // Only appointments where receptionist actually collected money
-      setAppointments(list.filter(a => a.receptionPayment?.totalPaid > 0));
+      // Only appointments where receptionist actually collected money (exclude cancelled+refunded)
+      setAppointments(list.filter(a => a.receptionPayment?.totalPaid > 0 && a.status !== 'cancelled'));
     } catch {
       toast.error('Failed to load appointments');
     } finally {

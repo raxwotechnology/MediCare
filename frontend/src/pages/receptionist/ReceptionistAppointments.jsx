@@ -56,6 +56,12 @@ export default function ReceptionistAppointments() {
   const [extraSplits, setExtraSplits] = useState([]);
   const [extraChange, setExtraChange] = useState(0);
 
+  // — Refund / cancel-with-refund modal —
+  const [refundModal, setRefundModal] = useState(false);
+  const [refundAppt, setRefundAppt] = useState(null);
+  const [refundForm, setRefundForm] = useState({ reason: 'Doctor absent', refundMethod: 'cash', refundNotes: '' });
+  const [processingRefund, setProcessingRefund] = useState(false);
+
   // Dates that already have appointments — used to highlight in the picker
   const [activeDates, setActiveDates] = useState([]);
   const refreshActiveDates = () => {
@@ -228,6 +234,92 @@ export default function ReceptionistAppointments() {
       await downloadAppointmentInvoice(appt);
     }
     toast.success('Invoice downloaded');
+  };
+
+  /* ── Cancel paid appointment + issue refund ────────────────────────────── */
+  const openRefundModal = (appt) => {
+    setRefundAppt(appt);
+    setRefundForm({ reason: 'Doctor absent', refundMethod: 'cash', refundNotes: '' });
+    setRefundModal(true);
+  };
+
+  const refundTotal = (appt) => {
+    if (!appt) return 0;
+    const reception = Number(appt.receptionPayment?.totalPaid || appt.price || 0);
+    const extras = (appt.extraCharges || []).filter(c => c.isPaid).reduce((s, c) => s + Number(c.price || 0), 0);
+    return reception + extras;
+  };
+
+  const handleCancelWithRefund = async () => {
+    if (!refundForm.reason.trim()) return toast.error('Please enter a reason');
+    setProcessingRefund(true);
+    try {
+      const r = await appointmentService.cancelWithRefund(refundAppt._id, refundForm);
+      toast.success(`Appointment cancelled — Refund LKR ${refundTotal(refundAppt).toFixed(2)} issued`);
+      setRefundModal(false);
+      fetchData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to process refund');
+    } finally { setProcessingRefund(false); }
+  };
+
+  const printRefundReceipt = (appt) => {
+    const ref = appt.cancellation?.refund;
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Refund Receipt</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      @page { size: A5; margin: 8mm; }
+      body { font-family: 'Courier New', monospace; font-size: 11pt; color: #000; background: #fff; }
+      .wrap { width: 148mm; padding: 8mm; margin: 0 auto; }
+      .center { text-align: center; }
+      .bold { font-weight: bold; }
+      .big { font-size: 15pt; font-weight: bold; }
+      .xl { font-size: 20pt; font-weight: 900; }
+      hr { border: none; border-top: 2px dashed #000; margin: 10px 0; }
+      .row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 10.5pt; }
+      .label { color: #555; }
+      .stamp { border: 3px solid #000; border-radius: 6px; padding: 8px 14px; display: inline-block; margin: 10px auto; }
+      .alert { background: #f0f0f0; border: 1.5px solid #000; border-radius: 4px; padding: 10px; margin: 10px 0; text-align: center; }
+      @media print { body { margin: 0; } }
+    </style></head><body>
+    <div class="wrap">
+      <div class="center">
+        <div class="big">Aayu Medi Care 24</div>
+        <div style="font-size:9.5pt;margin-top:2px;font-family:Arial,sans-serif">Pannala Road, Dankotuwa &bull; 0312260097</div>
+        <hr/>
+        <div class="xl" style="letter-spacing:.08em">REFUND RECEIPT</div>
+        <div style="font-size:9pt;margin-top:3px;font-family:Arial,sans-serif">${ref?.receiptNumber || ''}</div>
+      </div>
+      <hr/>
+      <div class="row"><span class="label">Patient</span><span class="bold">${appt.patientName || ''}</span></div>
+      <div class="row"><span class="label">Phone</span><span>${appt.patientPhone || ''}</span></div>
+      <div class="row"><span class="label">Original Invoice</span><span>${appt.invoiceNumber || ''}</span></div>
+      <div class="row"><span class="label">Appointment Date</span><span>${appt.appointmentDate || ''}</span></div>
+      <div class="row"><span class="label">Doctor</span><span>${appt.doctor?.designation || 'Dr.'} ${appt.doctor?.name || appt.doctorName || ''}</span></div>
+      <div class="row"><span class="label">Service</span><span>${appt.serviceName || ''}</span></div>
+      <hr/>
+      <div class="alert">
+        <div style="font-size:9pt;font-family:Arial,sans-serif;margin-bottom:4px">REASON FOR CANCELLATION</div>
+        <div class="bold">${appt.cancellation?.reason || 'Doctor absent'}</div>
+      </div>
+      <hr/>
+      <div class="row"><span class="label">Refund Method</span><span class="bold" style="text-transform:uppercase">${ref?.method || ''}</span></div>
+      <div class="row"><span class="label">Refund Amount</span><span class="bold" style="font-size:14pt">LKR ${Number(ref?.amount || 0).toFixed(2)}</span></div>
+      <div class="row"><span class="label">Processed At</span><span>${ref?.processedAt ? new Date(ref.processedAt).toLocaleString() : ''}</span></div>
+      ${ref?.notes ? `<div class="row"><span class="label">Notes</span><span>${ref.notes}</span></div>` : ''}
+      <hr/>
+      <div class="center" style="margin-top:8px">
+        <div class="stamp bold">REFUND PROCESSED</div>
+        <div style="font-size:8.5pt;font-family:Arial,sans-serif;margin-top:8px;color:#555">
+          Please keep this receipt as proof of refund.<br/>
+          Computer-generated &bull; No signature required
+        </div>
+      </div>
+    </div>
+    <script>window.addEventListener('load', () => setTimeout(() => window.print(), 400));<\/script>
+    </body></html>`;
+    const win = window.open('', '_blank', 'width=620,height=800');
+    if (win) { win.document.write(html); win.document.close(); }
   };
 
   /* ── Filtering / sorting ───────────────────────────────────────────────── */
@@ -404,6 +496,12 @@ export default function ReceptionistAppointments() {
                         className="btn-secondary text-xs flex items-center gap-1 py-1.5 px-3">
                         <FiDownload size={12} /> Download Invoice
                       </button>
+                      {['paid', 'with_doctor'].includes(appt.status) && (
+                        <button onClick={() => openRefundModal(appt)}
+                          className="text-xs flex items-center gap-1 py-1.5 px-3 font-medium text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-colors whitespace-nowrap">
+                          <FiXCircle size={12} /> Cancel &amp; Refund
+                        </button>
+                      )}
                     </div>
                   )}
 
@@ -470,6 +568,21 @@ export default function ReceptionistAppointments() {
                     <p className="text-xs text-teal-600 mt-2 pt-2 border-t border-gray-100">
                       🩺 Patient entered doctor's room at {new Date(appt.doctorQueue.acceptedAt).toLocaleTimeString()}
                     </p>
+                  )}
+
+                  {appt.status === 'cancelled' && appt.cancellation?.refund?.amount > 0 && (
+                    <div className="mt-2 pt-2 border-t border-gray-100 flex items-center gap-2 flex-wrap text-xs">
+                      <span className="bg-red-100 text-red-700 font-bold px-2 py-1 rounded-md">CANCELLED &amp; REFUNDED</span>
+                      <span className="text-gray-600">
+                        LKR {Number(appt.cancellation.refund.amount).toFixed(2)} via <strong className="uppercase">{appt.cancellation.refund.method}</strong>
+                      </span>
+                      <span className="text-gray-400">· {appt.cancellation.reason}</span>
+                      <button
+                        onClick={() => printRefundReceipt(appt)}
+                        className="flex items-center gap-1 text-red-600 hover:text-red-800 font-medium ml-auto">
+                        <FiPrinter size={11} /> Reprint Receipt
+                      </button>
+                    </div>
                   )}
                 </div>
               );
@@ -643,6 +756,83 @@ export default function ReceptionistAppointments() {
                 className="btn-success flex-1 flex items-center justify-center gap-2">
                 <FiCheck size={16} />
                 {processing === payingExtra.charge._id ? 'Processing...' : 'Confirm Payment'}
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+      {/* ── Cancel & Refund modal ───────────────────────────────────────── */}
+      <Modal isOpen={refundModal} onClose={() => setRefundModal(false)} title="Cancel Appointment & Issue Refund" size="sm">
+        {refundAppt && (
+          <div className="space-y-4">
+            {/* Summary */}
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+              <p className="text-xs font-semibold text-red-500 uppercase tracking-wide mb-1">Appointment to Cancel</p>
+              <p className="font-bold text-gray-900">{refundAppt.patientName}</p>
+              <p className="text-sm text-gray-500">{refundAppt.patientPhone}</p>
+              <p className="text-sm text-gray-600 mt-1">
+                {refundAppt.doctor?.designation || refundAppt.doctorDesignation || 'Dr.'}{' '}
+                {refundAppt.doctor?.name || refundAppt.doctorName} &bull; {refundAppt.serviceName}
+              </p>
+              <div className="mt-3 flex items-center justify-between">
+                <span className="text-sm text-gray-500">Refund Amount</span>
+                <span className="text-xl font-bold text-red-600">LKR {refundTotal(refundAppt).toFixed(2)}</span>
+              </div>
+              {(refundAppt.extraCharges || []).filter(c => c.isPaid).length > 0 && (
+                <p className="text-xs text-gray-400 text-right mt-0.5">
+                  (consultation + {(refundAppt.extraCharges || []).filter(c => c.isPaid).length} paid extra service{(refundAppt.extraCharges || []).filter(c => c.isPaid).length > 1 ? 's' : ''})
+                </p>
+              )}
+            </div>
+
+            {/* Reason */}
+            <div>
+              <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1 block">Reason for Cancellation *</label>
+              <select className="input-field" value={refundForm.reason}
+                onChange={e => setRefundForm(f => ({ ...f, reason: e.target.value }))}>
+                <option value="Doctor absent">Doctor absent</option>
+                <option value="Doctor emergency">Doctor emergency</option>
+                <option value="Clinic closed">Clinic closed</option>
+                <option value="Patient request">Patient request</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            {/* Refund method */}
+            <div>
+              <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2 block">Refund Method *</label>
+              <div className="grid grid-cols-3 gap-2">
+                {['cash', 'card', 'online'].map(m => (
+                  <button key={m} type="button"
+                    onClick={() => setRefundForm(f => ({ ...f, refundMethod: m }))}
+                    className={`py-2.5 rounded-xl border-2 text-sm font-semibold capitalize transition-all
+                      ${refundForm.refundMethod === m
+                        ? 'border-red-500 bg-red-50 text-red-700'
+                        : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}>
+                    {m}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Optional notes */}
+            <div>
+              <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1 block">Notes (optional)</label>
+              <input className="input-field" placeholder="e.g. Refund given at reception counter"
+                value={refundForm.refundNotes}
+                onChange={e => setRefundForm(f => ({ ...f, refundNotes: e.target.value }))} />
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
+              ⚠ This will cancel the appointment and mark the full amount as refunded. A refund receipt will print automatically.
+            </div>
+
+            <div className="flex gap-3">
+              <button onClick={() => setRefundModal(false)} className="btn-secondary flex-1">Back</button>
+              <button onClick={handleCancelWithRefund} disabled={processingRefund}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition-colors disabled:opacity-60">
+                <FiXCircle size={16} />
+                {processingRefund ? 'Processing...' : 'Cancel & Refund'}
               </button>
             </div>
           </div>

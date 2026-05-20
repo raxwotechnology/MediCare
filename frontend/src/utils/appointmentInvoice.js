@@ -50,39 +50,44 @@ const fmt = (n) => `LKR ${Number(n || 0).toFixed(2)}`;
 
 const STYLES = `
 * { box-sizing: border-box; margin: 0; padding: 0; }
-@page { size: A4; margin: 6.35mm; }
-body { font-family: 'Times New Roman', Times, serif; color: #000; background: #fff; font-size: 11.5pt; }
+@page { size: A4; margin: 0.5mm; }
+body { font-family: 'Times New Roman', Times, serif; color: #000; background: #fff; font-size: 13pt; }
 #invoice-root { width: 210mm; min-height: 297mm; padding: 6.35mm; margin: 0 auto; }
-.header { text-align: center; border-top: 3px solid #000; border-bottom: 3px solid #000; padding: 14px 0; margin-bottom: 18px; }
-.logo { height: 60px; object-fit: contain; display: block; margin: 0 auto 8px; }
-.clinic-name { font-size: 18pt; font-weight: 700; letter-spacing: .04em; }
-.clinic-sub { font-size: 9pt; color: #444; line-height: 1.7; font-family: Arial, sans-serif; }
-.invoice-label { font-size: 13pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin: 10px 0 2px; font-family: Arial, sans-serif; }
-.invoice-ref { font-size: 9pt; color: #555; font-family: Arial, sans-serif; }
-.meta { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid #ccc; padding-bottom: 14px; }
-.meta-label { font-size: 7.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #555; font-family: Arial, sans-serif; margin-bottom: 3px; }
-.meta-value { font-size: 10.5pt; font-weight: 700; font-family: Arial, sans-serif; }
-.meta-sub { font-size: 9pt; color: #555; font-family: Arial, sans-serif; }
+.header { padding: 14px 16px; margin-bottom: 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; }
+.header-right { display: flex; flex-direction: column; justify-content: center; flex-shrink: 0; margin-left: 16px; }
+.header-left { display: flex; align-items: center; justify-content: flex-end; flex-shrink: 0; margin-left: 16px; }
+.logo { object-fit: contain; display: block; max-height: 80px; width: auto; }
+.clinic-name { font-size: 20pt; font-weight: 700; letter-spacing: .04em; line-height: 1.2; }
+.clinic-sub { font-size: 13pt; color: #444; line-height: 1.3; font-family: Arial, sans-serif; }
+.header-title { text-align: center; margin-top: 10px; padding-top: 10px; }
+.invoice-label { font-size: 17pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 2px; font-family: Arial, sans-serif; }
+.invoice-ref { font-size: 10pt; color: #555; font-family: Arial, sans-serif; }
+.meta { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; padding-top: 14px; margin-top: 20px; border-top: 1px solid #ccc; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid #ccc; padding-bottom: 14px; }
+.meta-label { font-size: 8.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #555; font-family: Arial, sans-serif; margin-bottom: 6px; text-align: center; }
+.meta-value { font-size: 12pt; font-weight: 700; font-family: Arial, sans-serif; text-align: center; }
+.meta-sub { font-size: 11pt; color: #555; font-family: Arial, sans-serif; text-align: center; }
+.queue-col { background: #f4f4f4; border: 1.5px solid #ccc; border-radius: 4px; padding: 8px 12px; display: flex; flex-direction: column; justify-content: center; }
+.queue-num { font-size: 20pt; font-weight: 800; font-family: 'Courier New', monospace; color: #000; line-height: 1; text-align: center; }
 table.items { width: 100%; border-collapse: collapse; margin-bottom: 0; }
-table.items thead th { background: #000; color: #fff; padding: 7px 10px; text-align: left; font-size: 9pt; font-family: Arial, sans-serif; letter-spacing: .05em; text-transform: uppercase; }
+table.items thead th { background: #000; color: #fff; padding: 8px 10px; text-align: left; font-size: 10pt; font-family: Arial, sans-serif; letter-spacing: .05em; text-transform: uppercase; }
 .th-r { text-align: right !important; } .th-c { text-align: center !important; }
-.td-i { padding: 9px 10px; border-bottom: 1px solid #ddd; }
-.td-a { padding: 9px 10px; border-bottom: 1px solid #ddd; text-align: right; font-family: 'Courier New', monospace; font-size: 10.5pt; font-weight: 700; white-space: nowrap; }
-.td-s { padding: 9px 10px; border-bottom: 1px solid #ddd; text-align: center; }
-.iname { font-weight: 700; font-size: 10.5pt; font-family: Arial, sans-serif; }
-.isub { font-size: 8.5pt; color: #555; font-family: Arial, sans-serif; margin-top: 2px; }
-.badge { display: inline-block; padding: 2px 9px; border-radius: 2px; font-size: 8pt; font-weight: 700; font-family: Arial, sans-serif; letter-spacing: .03em; border: 1.5px solid #000; }
+.td-i { padding: 10px 10px; border-bottom: 1px solid #ddd; }
+.td-a { padding: 10px 10px; border-bottom: 1px solid #ddd; text-align: right; font-family: 'Courier New', monospace; font-size: 12pt; font-weight: 700; white-space: nowrap; }
+.td-s { padding: 10px 10px; border-bottom: 1px solid #ddd; text-align: center; }
+.iname { font-weight: 700; font-size: 12pt; font-family: Arial, sans-serif; }
+.isub { font-size: 11pt; color: #555; font-family: Arial, sans-serif; margin-top: 2px; }
+.badge { display: inline-block; padding: 3px 10px; border-radius: 2px; font-size: 9pt; font-weight: 700; font-family: Arial, sans-serif; letter-spacing: .03em; border: 1.5px solid #000; }
 .paid { background: #000; color: #fff; } .unpaid { background: #fff; color: #000; }
-.tfoot-sub td { padding: 9px 10px; border-top: 2px solid #000; font-family: Arial, sans-serif; font-size: 10pt; font-weight: 700; text-align: right; }
-.tfoot-paid td { padding: 7px 10px; font-family: Arial, sans-serif; font-size: 10pt; font-weight: 700; text-align: right; border-bottom: 2px solid #000; }
-.tfoot-bal td { padding: 9px 10px; }
-.bal-lbl { text-align: right; font-weight: 700; font-family: Arial, sans-serif; font-size: 11pt; }
-.bal-amt { text-align: right; font-weight: 800; font-family: 'Courier New', monospace; font-size: 13pt; }
+.tfoot-sub td { padding: 10px 10px; border-top: 2px solid #000; font-family: Arial, sans-serif; font-size: 11pt; font-weight: 700; text-align: right; }
+.tfoot-paid td { padding: 8px 10px; font-family: Arial, sans-serif; font-size: 11pt; font-weight: 700; text-align: right; border-bottom: 2px solid #000; }
+.tfoot-bal td { padding: 10px 10px; }
+.bal-lbl { text-align: right; font-weight: 700; font-family: Arial, sans-serif; font-size: 12pt; }
+.bal-amt { text-align: right; font-weight: 800; font-family: 'Courier New', monospace; font-size: 14pt; }
 .pay-box { margin-top: 14px; padding: 10px 14px; border: 1.5px solid #ccc; }
-.pay-title { font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #555; font-family: Arial, sans-serif; margin-bottom: 6px; }
-.pay-tbl { width: 100%; font-size: 10pt; font-family: Arial, sans-serif; }
-.pm { padding: 4px 8px; color: #333; } .pa { padding: 4px 8px; text-align: right; font-weight: 700; font-family: 'Courier New', monospace; }
-.footer { margin-top: 24px; text-align: center; font-size: 8pt; color: #777; border-top: 1px solid #ccc; padding-top: 10px; font-family: Arial, sans-serif; line-height: 1.6; }
+.pay-title { font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #555; font-family: Arial, sans-serif; margin-bottom: 6px; }
+.pay-tbl { width: 100%; font-size: 12pt; font-family: Arial, sans-serif; }
+.pm { padding: 4px 8px; color: #333; font-size: 12pt; } .pa { font-size: 12pt; padding: 4px 8px; text-align: right; font-weight: 700; font-family: 'Courier New', monospace; }
+.footer { margin-top: 24px; text-align: center; font-size: 9pt; color: #777; border-top: 1px solid #ccc; padding-top: 10px; font-family: Arial, sans-serif; line-height: 1.6; }
 @media print { body { margin: 0; } #invoice-root { padding: 6.35mm; width: 210mm; min-height: 297mm; } * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } table.items thead th { background: #000 !important; color: #fff !important; } .paid { background: #000 !important; color: #fff !important; } #pdf-btn { display: none !important; } }
 `;
 
@@ -103,8 +108,8 @@ export const buildAppointmentInvoiceHtml = (appt, logoSrc, mode = 'print') => {
   const itemsRows = lineItems.map((it) => `
     <tr>
       <td class="td-i"><div class="iname">${it.label}</div><div class="isub">${it.sub || ''}</div></td>
+      <td class="td-s"></td>
       <td class="td-a">${fmt(it.price)}</td>
-      <td class="td-s"><span class="badge ${it.paid ? 'paid' : 'unpaid'}">${it.paid ? '✓ Paid' : 'Unpaid'}</span></td>
     </tr>`).join('');
 
   const subtotal = lineItems.reduce((s, x) => s + Number(x.price || 0), 0);
@@ -124,11 +129,13 @@ export const buildAppointmentInvoiceHtml = (appt, logoSrc, mode = 'print') => {
     : '';
 
   const payBlock = (payRows || changeRows)
-    ? `<div class="pay-box"><div class="pay-title">Payment Breakdown</div><table class="pay-tbl">${payRows}${changeRows}</table></div>`
+    ? `<div class="pay-box"><div class="pay-title">Paid By</div><table class="pay-tbl">${payRows}${changeRows}</table></div>`
     : '';
 
   const invoiceNo = appt.invoiceNumber || `INV-${(appt._id || '').toString().slice(-6).toUpperCase()}`;
-  const queueLine = appt.queueNumber ? `<div class="meta-sub">Queue #${appt.queueNumber}</div>` : '';
+  const queueCol = appt.queueNumber
+    ? `<div><div class="meta-label">Queue No.</div><div class="queue-num">#${appt.queueNumber}</div></div>`
+    : `<div><div class="meta-label">Queue No.</div><div class="meta-value">—</div></div>`;
   const balanceLine = balance > 0
     ? `<tr class="tfoot-bal"><td colspan="2" class="bal-lbl">Balance Due</td><td class="bal-amt">${fmt(balance)}</td></tr>` : '';
 
@@ -160,24 +167,31 @@ export const buildAppointmentInvoiceHtml = (appt, logoSrc, mode = 'print') => {
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Invoice ${invoiceNo}</title><style>${STYLES}</style>${pdfScript}</head><body>
 <div id="invoice-root">
   <div class="header">
-    ${logoHtml}
-    <div class="clinic-name">${CLINIC.name}</div>
-    <div class="clinic-sub">${CLINIC.address}</div>
-    <div class="clinic-sub">Tel: ${CLINIC.phone} &nbsp;|&nbsp; ${CLINIC.email}</div>
+    <div class="header-left">
+      ${logoHtml}
+    </div>
+    <div class="header-right">
+      <div class="clinic-name">${CLINIC.name}</div>
+      <div class="clinic-sub">${CLINIC.address}</div>
+      <div class="clinic-sub">Tel:     ${CLINIC.phone}</div>
+      <div class="clinic-sub">Email: ${CLINIC.email}</div>
+    </div>
+  </div>
+  <div class="header-title" style="text-align:center;margin-bottom:14px;">
     <div class="invoice-label">Appointment Invoice</div>
-    <div class="invoice-ref">${invoiceNo} &bull; ${new Date().toLocaleString()}</div>
   </div>
   <div class="meta">
     <div><div class="meta-label">Patient</div><div class="meta-value">${appt.patientName || ''}</div><div class="meta-sub">${appt.patientPhone || ''}</div></div>
     <div><div class="meta-label">Doctor</div><div class="meta-value">${appt.doctor?.designation || 'Dr.'} ${appt.doctor?.name || appt.doctorName || ''}</div><div class="meta-sub">${appt.doctor?.specialization || ''}</div></div>
-    <div><div class="meta-label">Appointment</div><div class="meta-value">${appt.appointmentDate || ''}</div>${queueLine}</div>
+    <div><div class="meta-label">Appointment</div><div class="meta-value">${appt.appointmentDate || ''}</div></div>
+    ${queueCol}
   </div>
   <table class="items">
-    <thead><tr><th>Service / Item</th><th class="th-r">Amount</th><th class="th-c">Status</th></tr></thead>
+    <thead><tr><th>Service</th><th class="th-c"></th><th class="th-r">Amount</th></tr></thead>
     <tbody>${itemsRows}</tbody>
     <tfoot>
-      <tr class="tfoot-sub"><td colspan="2">Subtotal</td><td style="font-family:'Courier New',monospace;font-size:11pt">${fmt(subtotal)}</td></tr>
-      <tr class="tfoot-paid"><td colspan="2">Total Paid</td><td style="font-family:'Courier New',monospace;font-size:11pt">${fmt(paidTotal)}</td></tr>
+      <tr class="tfoot-sub"><td colspan="2">Sub Total</td><td style="font-family:'Courier New',monospace;font-size:12pt;text-align:right;">${fmt(subtotal)}</td></tr>
+      <tr class="tfoot-paid"><td colspan="2">Total Paid</td><td style="font-family:'Courier New',monospace;font-size:12pt;text-align:right;">${fmt(paidTotal)}</td></tr>
       ${balanceLine}
     </tfoot>
   </table>

@@ -72,6 +72,7 @@ export const appointmentService = {
   checkAppointment: (params) => api.get('/appointments/check', { params }),
 
   cancel: (id) => api.patch(`/appointments/${id}/cancel`),
+  cancelWithRefund: (id, data) => api.patch(`/appointments/${id}/cancel-refund`, data),
   delete: (id) => api.delete(`/appointments/${id}`),
   // Pass { doctorId, excludeCancelled } to filter — used for booking calendars
   getActiveDates: (params) => api.get('/appointments/active-dates', { params }),

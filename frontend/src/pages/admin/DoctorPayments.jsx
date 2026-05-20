@@ -62,7 +62,7 @@ export default function DoctorPayments() {
         paymentSplits: paySplits,
       });
       toast.success(payChange > 0
-        ? `Paid Dr. ${selectedForPay.doctor?.name || ''} — change LKR ${payChange.toFixed(2)}`
+        ? `Paid ${selectedForPay.doctor?.designation || 'Dr.'} ${selectedForPay.doctor?.name || ''} — change LKR ${payChange.toFixed(2)}`
         : 'Payment marked as paid');
       setShowPayModal(false);
       fetch();
@@ -109,7 +109,7 @@ export default function DoctorPayments() {
                 const pending = earned - paid;
                 return (
                   <tr key={d.doctor._id}>
-                    <td className="font-medium">Dr. {d.doctor?.name || d.doctorName || 'Deleted'}</td>
+                    <td className="font-medium">{d.doctor?.designation || 'Dr.'} {d.doctor?.name || d.doctorName || 'Deleted'}</td>
                     <td className="text-blue-600 font-semibold">LKR {earned.toLocaleString()}</td>
                     <td className="text-emerald-600 font-semibold">LKR {paid.toLocaleString()}</td>
                     <td className="font-bold">
@@ -140,7 +140,7 @@ export default function DoctorPayments() {
               {filtered.length === 0 ? <tr><td colSpan={6}><EmptyState message={`No ${tab} payments`} /></td></tr>
                 : filtered.map(p => (
                   <tr key={p._id}>
-                    <td className="font-medium">Dr. {p.doctor?.name || p.doctorName || 'Deleted'}</td>
+                    <td className="font-medium">{p.doctor?.designation || 'Dr.'} {p.doctor?.name || p.doctorName || 'Deleted'}</td>
                     <td className="font-bold text-primary-600">
                       LKR {p.amount?.toLocaleString()}
                       {p.status === 'paid' && Number(p.changeGiven) > 0 && (
@@ -175,7 +175,7 @@ export default function DoctorPayments() {
           <form onSubmit={handlePay} className="space-y-4">
             <div className="bg-gray-50 p-4 rounded-xl">
               <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Paying To</p>
-              <p className="font-bold text-gray-900">Dr. {selectedForPay.doctor?.name || selectedForPay.doctorName || 'Deleted'}</p>
+              <p className="font-bold text-gray-900">{selectedForPay.doctor?.designation || 'Dr.'} {selectedForPay.doctor?.name || selectedForPay.doctorName || 'Deleted'}</p>
               <p className="text-2xl font-display font-black text-primary-600 mt-1">LKR {selectedForPay.amount?.toLocaleString()}</p>
             </div>
 
@@ -206,7 +206,7 @@ export default function DoctorPayments() {
                 const pending = docSummary ? (docSummary.totalEarned || 0) - (docSummary.paidAmount || 0) : null;
                 return (
                   <option key={d._id} value={d._id}>
-                    Dr. {d.name}{pending !== null ? ` — Pending: LKR ${pending.toLocaleString()}` : ''}
+                    {d.designation || 'Dr.'} {d.name}{pending !== null ? ` — Pending: LKR ${pending.toLocaleString()}` : ''}
                   </option>
                 );
               })}
