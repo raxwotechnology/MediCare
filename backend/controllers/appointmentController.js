@@ -158,8 +158,68 @@ export const cancelAppointment = async (req, res) => {
     if (!appt) return res.status(404).json({ message: 'Appointment not found' });
     if (appt.status === 'completed') return res.status(400).json({ message: 'Cannot cancel a completed appointment' });
     appt.status = 'cancelled';
+    appt.cancellation = {
+      cancelledAt: new Date(),
+      cancelledBy: req.user._id,
+      reason: req.body.reason || '',
+      refund: { amount: 0, method: 'none' },
+    };
     await appt.save();
     res.json(appt);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Cancel a PAID appointment and process a refund.
+   Body: { reason, refundMethod: 'cash'|'card'|'online', refundNotes? }
+   ──────────────────────────────────────────────────────────────────────────── */
+export const cancelWithRefund = async (req, res) => {
+  try {
+    const appt = await Appointment.findById(req.params.id);
+    if (!appt) return res.status(404).json({ message: 'Appointment not found' });
+    if (!['paid', 'with_doctor'].includes(appt.status)) {
+      return res.status(400).json({ message: 'Only paid appointments can be refunded' });
+    }
+
+    const { reason, refundMethod, refundNotes } = req.body;
+    if (!refundMethod || !['cash', 'card', 'online'].includes(refundMethod)) {
+      return res.status(400).json({ message: 'A valid refund method (cash, card, online) is required' });
+    }
+
+    // Total to refund = reception payment + any paid extra charges
+    const receptionPaid = Number(appt.receptionPayment?.totalPaid || appt.price || 0);
+    const extrasPaid = (appt.extraCharges || [])
+      .filter(c => c.isPaid)
+      .reduce((s, c) => s + Number(c.price || 0), 0);
+    const refundAmount = receptionPaid + extrasPaid;
+
+    const receiptNumber = `REF-${appt._id.toString().slice(-6).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+
+    appt.status = 'cancelled';
+    appt.cancellation = {
+      cancelledAt: new Date(),
+      cancelledBy: req.user._id,
+      reason: reason || 'Doctor absent',
+      refund: {
+        amount:        refundAmount,
+        method:        refundMethod,
+        processedAt:   new Date(),
+        processedBy:   req.user._id,
+        receiptNumber,
+        notes:         refundNotes || '',
+      },
+    };
+
+    await appt.save();
+
+    const populated = await Appointment.findById(appt._id)
+      .populate('doctor', 'name specialization designation')
+      .populate('cancellation.cancelledBy', 'name')
+      .populate('cancellation.refund.processedBy', 'name');
+
+    res.json(populated);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

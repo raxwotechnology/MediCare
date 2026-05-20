@@ -128,6 +128,21 @@ const appointmentSchema = new mongoose.Schema({
   invoicePrintedCount: { type: Number, default: 0 },
 
   notes: { type: String },
+
+  // Cancellation & refund tracking
+  cancellation: {
+    cancelledAt:  { type: Date },
+    cancelledBy:  { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    reason:       { type: String, default: '' },
+    refund: {
+      amount:        { type: Number, default: 0 },
+      method:        { type: String, enum: ['cash', 'card', 'online', 'none', ''], default: '' },
+      processedAt:   { type: Date },
+      processedBy:   { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      receiptNumber: { type: String },
+      notes:         { type: String, default: '' },
+    },
+  },
 }, { timestamps: true });
 
 /* Auto-assign a stable invoice number once we have an _id. */

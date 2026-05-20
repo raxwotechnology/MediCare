@@ -3,7 +3,7 @@ import {
   createAppointment, getAppointments, getAppointmentById,
   markAsPaid, addPrescription, addPharmacyBill, payPharmacyBill,
   getQueueNumber, lookupPatient, acceptPatient, completePatient,
-  cancelAppointment, deleteAppointment, getActiveDates, getActiveDatesPublic,
+  cancelAppointment, cancelWithRefund, deleteAppointment, getActiveDates, getActiveDatesPublic,
   addExtraCharge, payExtraCharge, deleteExtraCharge, recordInvoicePrint,
   checkAppointment,
 } from '../controllers/appointmentController.js';
@@ -55,6 +55,7 @@ router.patch('/:id/invoice-printed',
   recordInvoicePrint);
 
 router.patch('/:id/cancel', authorize('admin', 'receptionist'), logAction('CANCEL_APPOINTMENT', 'Appointment'), cancelAppointment);
+router.patch('/:id/cancel-refund', authorize('admin', 'receptionist'), logAction('CANCEL_WITH_REFUND', 'Appointment'), cancelWithRefund);
 router.delete('/:id', authorize('admin'), logAction('DELETE_APPOINTMENT', 'Appointment'), deleteAppointment);
 
 export default router;

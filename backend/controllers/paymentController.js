@@ -140,7 +140,7 @@ export const getDoctorPayments = async (req, res) => {
     }
 
     const payments = await DoctorPayment.find(filter)
-      .populate('doctor', 'name')
+      .populate('doctor', 'name designation')
       .populate('paidBy', 'name')
       .sort('-createdAt');
     res.json(payments);
@@ -213,7 +213,7 @@ export const getDoctorEarningsSummary = async (req, res) => {
       const paidAmount = paid[0]?.total || 0;
 
       return {
-        doctor: { _id: docIdStr, name: name || 'Unknown Doctor' },
+        doctor: { _id: docIdStr, name: name || 'Unknown Doctor', designation: docProfile?.designation || 'Dr.' },
         totalEarned,
         paidAmount,
         pendingAmount: totalEarned - paidAmount,

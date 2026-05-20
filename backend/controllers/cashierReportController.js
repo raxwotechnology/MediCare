@@ -110,8 +110,8 @@ export const getDailySummary = async (req, res) => {
     const expenses      = await Expense.find({ date: { $gte: date, $lte: date } });
     const extraIncomes  = await ExtraIncome.find({ date: { $gte: date, $lte: date } });
 
-    // 3. System-calculated income (audit check)
-    const appts = await Appointment.find({ appointmentDate: date });
+    // 3. System-calculated income (audit check) — exclude cancelled appointments
+    const appts = await Appointment.find({ appointmentDate: date, status: { $ne: 'cancelled' } });
 
     // Reception payment
     let apptIncome = { cash: 0, card: 0, online: 0 };
