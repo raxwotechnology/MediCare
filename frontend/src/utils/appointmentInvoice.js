@@ -56,38 +56,38 @@ body { font-family: 'Times New Roman', Times, serif; color: #000; background: #f
 .header { padding: 14px 16px; margin-bottom: 12px; display: flex; flex-direction: row; align-items: center; justify-content: space-between; }
 .header-right { display: flex; flex-direction: column; justify-content: center; flex-shrink: 0; margin-left: 16px; }
 .header-left { display: flex; align-items: center; justify-content: flex-end; flex-shrink: 0; margin-left: 16px; }
-.logo { object-fit: contain; display: block; max-height: 80px; width: auto; }
-.clinic-name { font-size: 20pt; font-weight: 700; letter-spacing: .04em; line-height: 1.2; }
-.clinic-sub { font-size: 13pt; color: #444; line-height: 1.3; font-family: Arial, sans-serif; }
-.header-title { text-align: center; margin-top: 10px; padding-top: 10px; }
-.invoice-label { font-size: 17pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 2px; font-family: Arial, sans-serif; }
-.invoice-ref { font-size: 10pt; color: #555; font-family: Arial, sans-serif; }
-.meta { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; padding-top: 14px; margin-top: 20px; border-top: 1px solid #ccc; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid #ccc; padding-bottom: 14px; }
-.meta-label { font-size: 8.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #555; font-family: Arial, sans-serif; margin-bottom: 6px; text-align: center; }
-.meta-value { font-size: 12pt; font-weight: 700; font-family: Arial, sans-serif; text-align: center; }
-.meta-sub { font-size: 11pt; color: #555; font-family: Arial, sans-serif; text-align: center; }
+.logo { object-fit: contain; display: block; max-height: 100px; width: auto; }
+.clinic-name { font-size: 21pt; font-weight: 700; letter-spacing: .04em; line-height: 1.2; }
+.clinic-sub { font-size: 14pt; font-weight: 600; color: #000000; line-height: 1.3; font-family: Arial, sans-serif; }
+.header-title { text-align: center; margin-top: 13px; padding-top: 13px; }
+.invoice-label { font-size: 20pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 2px; font-family: Arial, sans-serif; }
+.invoice-ref { font-size: 13pt; font-weight: 400; color: #000000; font-family: Arial, sans-serif; }
+.meta { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; padding-top: 17px; margin-top: 23px; border-top: 1px solid #ccc; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid #ccc; padding-bottom: 14px; }
+.meta-label { font-size: 11.5pt; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #555; font-family: Arial, sans-serif; margin-bottom: 6px; text-align: center; }
+.meta-value { font-size: 15pt; font-weight: 700; font-family: Arial, sans-serif; text-align: center; }
+.meta-sub { font-size: 15pt; font-weight: 400; color: #000000; font-family: Arial, sans-serif; text-align: center; }
 .queue-col { background: #f4f4f4; border: 1.5px solid #ccc; border-radius: 4px; padding: 8px 12px; display: flex; flex-direction: column; justify-content: center; }
-.queue-num { font-size: 20pt; font-weight: 800; font-family: 'Courier New', monospace; color: #000; line-height: 1; text-align: center; }
+.queue-num { font-size: 23pt; font-weight: 800; font-family: 'Courier New', monospace; color: #000; line-height: 1; text-align: center; }
 table.items { width: 100%; border-collapse: collapse; margin-bottom: 0; }
 table.items thead th { background: #000; color: #fff; padding: 8px 10px; text-align: left; font-size: 10pt; font-family: Arial, sans-serif; letter-spacing: .05em; text-transform: uppercase; }
 .th-r { text-align: right !important; } .th-c { text-align: center !important; }
 .td-i { padding: 10px 10px; border-bottom: 1px solid #ddd; }
-.td-a { padding: 10px 10px; border-bottom: 1px solid #ddd; text-align: right; font-family: 'Courier New', monospace; font-size: 12pt; font-weight: 700; white-space: nowrap; }
+.td-a { padding: 10px 10px; border-bottom: 1px solid #ddd; text-align: right; font-family: 'Courier New', monospace; font-size: 15pt; font-weight: 700; white-space: nowrap; }
 .td-s { padding: 10px 10px; border-bottom: 1px solid #ddd; text-align: center; }
-.iname { font-weight: 700; font-size: 12pt; font-family: Arial, sans-serif; }
-.isub { font-size: 11pt; color: #555; font-family: Arial, sans-serif; margin-top: 2px; }
-.badge { display: inline-block; padding: 3px 10px; border-radius: 2px; font-size: 9pt; font-weight: 700; font-family: Arial, sans-serif; letter-spacing: .03em; border: 1.5px solid #000; }
+.iname { font-weight: 700; font-size: 15pt; font-family: Arial, sans-serif; }
+.isub { font-size: 14pt; color: #000000; font-family: Arial, sans-serif; margin-top: 2px; }
+.badge { display: inline-block; padding: 3px 10px; border-radius: 2px; font-size: 12pt; font-weight: 700; font-family: Arial, sans-serif; letter-spacing: .03em; border: 1.5px solid #000; }
 .paid { background: #000; color: #fff; } .unpaid { background: #fff; color: #000; }
-.tfoot-sub td { padding: 10px 10px; border-top: 2px solid #000; font-family: Arial, sans-serif; font-size: 11pt; font-weight: 700; text-align: right; }
-.tfoot-paid td { padding: 8px 10px; font-family: Arial, sans-serif; font-size: 11pt; font-weight: 700; text-align: right; border-bottom: 2px solid #000; }
+.tfoot-sub td { padding: 10px 10px; border-top: 2px solid #000; font-family: Arial, sans-serif; font-size: 14pt; font-weight: 700; text-align: right; }
+.tfoot-paid td { padding: 8px 10px; font-family: Arial, sans-serif; font-size: 14pt; font-weight: 700; text-align: right; border-bottom: 2px solid #000; }
 .tfoot-bal td { padding: 10px 10px; }
-.bal-lbl { text-align: right; font-weight: 700; font-family: Arial, sans-serif; font-size: 12pt; }
-.bal-amt { text-align: right; font-weight: 800; font-family: 'Courier New', monospace; font-size: 14pt; }
+.bal-lbl { text-align: right; font-weight: 700; font-family: Arial, sans-serif; font-size: 15pt; }
+.bal-amt { text-align: right; font-weight: 800; font-family: 'Courier New', monospace; font-size: 17pt; }
 .pay-box { margin-top: 14px; padding: 10px 14px; border: 1.5px solid #ccc; }
-.pay-title { font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #555; font-family: Arial, sans-serif; margin-bottom: 6px; }
-.pay-tbl { width: 100%; font-size: 12pt; font-family: Arial, sans-serif; }
-.pm { padding: 4px 8px; color: #333; font-size: 12pt; } .pa { font-size: 12pt; padding: 4px 8px; text-align: right; font-weight: 700; font-family: 'Courier New', monospace; }
-.footer { margin-top: 24px; text-align: center; font-size: 9pt; color: #777; border-top: 1px solid #ccc; padding-top: 10px; font-family: Arial, sans-serif; line-height: 1.6; }
+.pay-title { font-size: 12pt; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #555; font-family: Arial, sans-serif; margin-bottom: 6px; }
+.pay-tbl { width: 100%; font-size: 15pt; font-family: Arial, sans-serif; }
+.pm { padding: 4px 8px; color: #242424; font-size: 15pt; } .pa { font-size: 15pt; padding: 4px 8px; text-align: right; font-weight: 700; font-family: 'Courier New', monospace; }
+.footer { margin-top: 24px; text-align: center; font-size: 12pt; color: #373737; border-top: 1px solid #ccc; padding-top: 10px; font-family: Arial, sans-serif; line-height: 1.6; }
 @media print { body { margin: 0; } #invoice-root { padding: 6.35mm; width: 210mm; min-height: 297mm; } * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } table.items thead th { background: #000 !important; color: #fff !important; } .paid { background: #000 !important; color: #fff !important; } #pdf-btn { display: none !important; } }
 `;
 
@@ -177,7 +177,7 @@ export const buildAppointmentInvoiceHtml = (appt, logoSrc, mode = 'print') => {
       <div class="clinic-sub">Email: ${CLINIC.email}</div>
     </div>
   </div>
-  <div class="header-title" style="text-align:center;margin-bottom:14px;">
+  <div class="header-title" style="text-align:center;margin-bottom:16px;">
     <div class="invoice-label">Appointment Invoice</div>
   </div>
   <div class="meta">
@@ -190,8 +190,8 @@ export const buildAppointmentInvoiceHtml = (appt, logoSrc, mode = 'print') => {
     <thead><tr><th>Service</th><th class="th-c"></th><th class="th-r">Amount</th></tr></thead>
     <tbody>${itemsRows}</tbody>
     <tfoot>
-      <tr class="tfoot-sub"><td colspan="2">Sub Total</td><td style="font-family:'Courier New',monospace;font-size:12pt;text-align:right;">${fmt(subtotal)}</td></tr>
-      <tr class="tfoot-paid"><td colspan="2">Total Paid</td><td style="font-family:'Courier New',monospace;font-size:12pt;text-align:right;">${fmt(paidTotal)}</td></tr>
+      <tr class="tfoot-sub"><td colspan="2">Sub Total</td><td style="font-family:'Courier New',monospace;font-size:15pt;text-align:right;">${fmt(subtotal)}</td></tr>
+      <tr class="tfoot-paid"><td colspan="2">Total Paid</td><td style="font-family:'Courier New',monospace;font-size:15pt;text-align:right;">${fmt(paidTotal)}</td></tr>
       ${balanceLine}
     </tfoot>
   </table>
