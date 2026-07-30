@@ -1,0 +1,13 @@
+PORT=5000
+MONGO_URI=mongodb+srv://raxwotechnology_db_user:3LOzyAofPAixaA9D@aayumedicare24.a7mwpun.mongodb.net/
+JWT_SECRET=your_secret_key
+JWT_EXPIRE=7d
+NODE_ENV=development
+CLIENT_URL=http://localhost:5173,https://aayumedicare24.netlify.app
+
+# mongodb+srv://raxwotechnology_db_user:3LOzyAofPAixaA9D@aayumedicare24.a7mwpun.mongodb.net/
+# mongodb+srv://chrishan2002aloka_db_user:uN02bYguXWKiI3qJ@demomedicalclinic.tajny6x.mongodb.net/
+# mongodb://localhost:27017/clinic_db
+
+# http://localhost:5000
+# https://medicare-fsqk.onrender.com
