@@ -27,6 +27,7 @@ const app = express();
 const defaultOrigins = [
     'http://localhost:5173',
     'http://localhost:3000',
+    'https://ayumedicare.netlify.app',
     'https://aayumedicare24.netlify.app'
 ];
 const envOrigins = (process.env.CLIENT_URL || '')
@@ -40,7 +41,16 @@ app.use(cors({
         // allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
         const cleanOrigin = origin.replace(/\/$/, '');
-        if (allowedOrigins.length === 0 || allowedOrigins.includes('*') || allowedOrigins.includes(cleanOrigin)) {
+        const isNetlify = /^https:\/\/[a-zA-Z0-9-]+\.netlify\.app$/.test(cleanOrigin);
+        const isLocalhost = /^http:\/\/(localhost|127\.0\.0\.1)(:[0-9]+)?$/.test(cleanOrigin);
+
+        if (
+            allowedOrigins.length === 0 ||
+            allowedOrigins.includes('*') ||
+            allowedOrigins.includes(cleanOrigin) ||
+            isNetlify ||
+            isLocalhost
+        ) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
