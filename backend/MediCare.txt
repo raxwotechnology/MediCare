@@ -10,4 +10,4 @@ CLIENT_URL=http://localhost:5173,https://aayumedicare24.netlify.app
 # mongodb://localhost:27017/clinic_db
 
 # http://localhost:5000
-# https://medicare-fsqk.onrender.com
+# https://medicare-r54p.onrender.com

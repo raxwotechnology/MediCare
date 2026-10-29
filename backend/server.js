@@ -24,12 +24,23 @@ connectDB();
 
 const app = express();
 
-const allowedOrigins = (process.env.CLIENT_URL || '').split(',').map(url => url.trim());
+const defaultOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://aayumedicare24.netlify.app'
+];
+const envOrigins = (process.env.CLIENT_URL || '')
+    .split(',')
+    .map(url => url.trim().replace(/\/$/, ''))
+    .filter(Boolean);
+
+const allowedOrigins = Array.from(new Set([...defaultOrigins, ...envOrigins]));
 app.use(cors({
     origin: (origin, callback) => {
         // allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
-        if (allowedOrigins.length === 0 || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+        const cleanOrigin = origin.replace(/\/$/, '');
+        if (allowedOrigins.length === 0 || allowedOrigins.includes('*') || allowedOrigins.includes(cleanOrigin)) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
